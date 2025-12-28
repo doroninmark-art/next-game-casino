@@ -1,0 +1,3387 @@
+#!/bin/bash
+
+cat > next_gifts_casino_fixed.html << 'EOF'
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Gifts Casino</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1931, #1a1a2e);
+            min-height: 100vh;
+            color: white;
+            overflow-x: hidden;
+            position: relative;
+            transition: background 0.5s ease;
+        }
+
+        /* Game background options */
+        body.game-bg-space { background: linear-gradient(135deg, #0f0c29, #302b63, #24243e) !important; }
+        body.game-bg-ocean { background: linear-gradient(135deg, #0a1931, #185adb, #1a1a2e) !important; }
+        body.game-bg-forest { background: linear-gradient(135deg, #0a3410, #1a5f2a, #0d2d14) !important; }
+        body.game-bg-sunset { background: linear-gradient(135deg, #2c003e, #ff0080, #ff8c00) !important; }
+        body.game-bg-neon { background: linear-gradient(135deg, #0a0a0a, #6600cc, #ff00ff) !important; }
+        body.game-bg-gold { background: linear-gradient(135deg, #1a0f00, #ffd700, #b8860b) !important; }
+
+        /* White background for withdrawal/deposit screens */
+        body.withdrawal-screen,
+        body.deposit-screen,
+        body.settings-screen,
+        body.promo-screen {
+            background: white !important;
+            color: #333 !important;
+        }
+
+        /* Bank colors - global */
+        .bank-color-red { background: linear-gradient(45deg, #d32f2f, #b71c1c) !important; }
+        .bank-color-blue { background: linear-gradient(45deg, #1976d2, #0d47a1) !important; }
+        .bank-color-green { background: linear-gradient(45deg, #388e3c, #1b5e20) !important; }
+        .bank-color-orange { background: linear-gradient(45deg, #f57c00, #e65100) !important; }
+        .bank-color-purple { background: linear-gradient(45deg, #7b1fa2, #4a148c) !important; }
+        .bank-color-yellow { background: linear-gradient(45deg, #fbc02d, #f57f17) !important; color: #000 !important; }
+        .bank-color-teal { background: linear-gradient(45deg, #00796b, #004d40) !important; }
+        .bank-color-pink { background: linear-gradient(45deg, #c2185b, #880e4f) !important; }
+        .bank-color-cyan { background: linear-gradient(45deg, #0097a7, #006978) !important; }
+        .bank-color-brown { background: linear-gradient(45deg, #5d4037, #3e2723) !important; }
+        .bank-color-grey { background: linear-gradient(45deg, #616161, #424242) !important; }
+        .bank-color-indigo { background: linear-gradient(45deg, #303f9f, #1a237e) !important; }
+        .bank-color-lime { background: linear-gradient(45deg, #afb42b, #827717) !important; color: #000 !important; }
+
+        /* Balance Display */
+        #balance {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px 25px;
+            border-radius: 15px;
+            border: 2px solid #2a9d8f;
+            box-shadow: 0 0 20px #2a9d8f;
+            z-index: 1001;
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2a9d8f;
+            text-shadow: 0 0 10px #2a9d8f;
+        }
+
+        body.withdrawal-screen #balance,
+        body.deposit-screen #balance,
+        body.settings-screen #balance,
+        body.promo-screen #balance {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Register Button */
+        #registerButton {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #2a9d8f, #21867a);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            z-index: 1001;
+            font-weight: bold;
+            box-shadow: 0 0 15px rgba(42, 157, 143, 0.5);
+            transition: all 0.3s;
+        }
+
+        body.withdrawal-screen #registerButton,
+        body.deposit-screen #registerButton,
+        body.settings-screen #registerButton,
+        body.promo-screen #registerButton {
+            background: #333;
+            color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        #registerButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(42, 157, 143, 0.8);
+        }
+
+        /* Username Display */
+        #usernameDisplay {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 12px 25px;
+            border-radius: 10px;
+            border: 2px solid #2a9d8f;
+            box-shadow: 0 0 15px #2a9d8f;
+            z-index: 1001;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            color: #2a9d8f;
+            display: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        body.withdrawal-screen #usernameDisplay,
+        body.deposit-screen #usernameDisplay,
+        body.settings-screen #usernameDisplay,
+        body.promo-screen #usernameDisplay {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 2px solid #333;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        #usernameDisplay:hover {
+            background: rgba(42, 157, 143, 0.1);
+            transform: scale(1.05);
+        }
+
+        /* Register Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 40px;
+            border-radius: 20px;
+            border: 3px solid #2a9d8f;
+            box-shadow: 0 0 50px rgba(42, 157, 143, 0.5);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            animation: modalAppear 0.5s ease-out;
+        }
+
+        @keyframes modalAppear {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal h2 {
+            color: #2a9d8f;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #2a9d8f;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .modal-button {
+            background: linear-gradient(45deg, #2a9d8f, #21867a);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+        }
+
+        .modal-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(42, 157, 143, 0.5);
+        }
+
+        /* Main Menu */
+        #mainMenu {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            padding: 20px;
+        }
+
+        body.withdrawal-screen #mainMenu,
+        body.deposit-screen #mainMenu,
+        body.settings-screen #mainMenu,
+        body.promo-screen #mainMenu {
+            color: #333;
+        }
+
+        .game-title {
+            font-size: 4.5rem;
+            background: linear-gradient(45deg, #e76f51, #2a9d8f, #e9c46a);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 30px;
+            text-shadow: 0 0 30px rgba(42, 157, 143, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        body.withdrawal-screen .game-title,
+        body.deposit-screen .game-title,
+        body.settings-screen .game-title,
+        body.promo-screen .game-title {
+            background: linear-gradient(45deg, #333, #666);
+            -webkit-background-clip: text;
+            background-clip: text;
+            text-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(42, 157, 143, 0.5); }
+            to { text-shadow: 0 0 30px rgba(231, 111, 81, 0.5); }
+        }
+
+        .menu-button {
+            background: linear-gradient(45deg, #264653, #2a9d8f);
+            border: none;
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            margin: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 0 20px rgba(42, 157, 143, 0.3);
+            width: 300px;
+            border: 2px solid #e9c46a;
+        }
+
+        body.withdrawal-screen .menu-button,
+        body.deposit-screen .menu-button,
+        body.settings-screen .menu-button,
+        body.promo-screen .menu-button {
+            background: linear-gradient(45deg, #333, #666);
+            color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            border: 2px solid #999;
+        }
+
+        .menu-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(233, 196, 106, 0.5);
+        }
+
+        /* Withdrawal Screens */
+        #withdrawalScreen,
+        #depositScreen,
+        #settingsScreen,
+        #promoScreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Country Selection */
+        .country-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 12px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 20px 0;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+        }
+
+        .country-button {
+            padding: 15px 10px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            background: white;
+            color: #333;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+            min-height: 90px;
+            justify-content: center;
+        }
+
+        .country-button:hover {
+            background: #f0f0f0;
+            transform: scale(1.02);
+        }
+
+        .country-button.active {
+            background: #2a9d8f;
+            color: white;
+            border-color: #e9c46a;
+            box-shadow: 0 0 10px rgba(42, 157, 143, 0.3);
+        }
+
+        .country-flag {
+            font-size: 2rem;
+        }
+
+        /* Bank Selection Compact - FIXED VERSION */
+        .bank-selection-container {
+            max-width: 900px;
+            width: 100%;
+            margin: 20px auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            max-height: 70vh;
+            overflow-y: auto;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .bank-selection-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        /* FIXED BANK GRID */
+        .bank-grid-compact {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 12px;
+            align-items: stretch;
+            justify-items: stretch;
+        }
+
+        /* FIXED BANK BUTTONS */
+        .bank-button-compact {
+            padding: 12px 8px;
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            word-wrap: break-word;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .bank-button-compact:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+            filter: brightness(1.1);
+        }
+
+        /* Compact back button */
+        .back-button-compact {
+            background: linear-gradient(45deg, #666, #888);
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            font-size: 1rem;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+            transition: all 0.3s;
+        }
+
+        .back-button-compact:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Withdrawal/Deposit Form */
+        .withdrawal-form,
+        .deposit-form,
+        .settings-form,
+        .promo-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.2);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .withdrawal-form h2,
+        .deposit-form h2,
+        .settings-form h2,
+        .promo-form h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2rem;
+        }
+
+        .withdrawal-form .modal-input,
+        .deposit-form .modal-input,
+        .settings-form .modal-input,
+        .promo-form .modal-input {
+            background: white;
+            border: 2px solid #666;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .withdrawal-form .modal-button,
+        .deposit-form .modal-button,
+        .settings-form .modal-button,
+        .promo-form .modal-button {
+            background: linear-gradient(45deg, #333, #666);
+            margin-top: 10px;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 3001;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .loading-screen h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .loading-spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2a9d8f;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Success Screen */
+        .success-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 3000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .success-screen h1 {
+            font-size: 4rem;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .success-screen button {
+            background: linear-gradient(45deg, #2a9d8f, #21867a);
+            border: none;
+            color: white;
+            padding: 20px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            margin: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .success-screen button:hover {
+            transform: scale(1.05);
+        }
+
+        /* Deposit Limit Info */
+        .deposit-limit-info {
+            background: #f8f9fa;
+            border: 2px solid #666;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .deposit-limit-info h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #21a038, #2a9d8f);
+            transition: width 0.3s;
+        }
+
+        /* Game Screen */
+        #gameScreen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+        }
+
+        /* Rocket Area */
+        #rocketArea {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Rocket Emoji */
+        .rocket-emoji {
+            font-size: 200px;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.7));
+            margin-bottom: 50px;
+            animation: rocketFloat 3s ease-in-out infinite;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.5s ease;
+        }
+
+        @keyframes rocketFloat {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+
+        /* Multiplier Display */
+        #multiplierDisplay {
+            font-size: 6rem;
+            color: #2a9d8f;
+            text-shadow: 0 0 30px #2a9d8f, 0 0 60px #2a9d8f;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            margin-top: 20px;
+            position: relative;
+            z-index: 2;
+            transition: all 0.3s;
+        }
+
+        .multiplier-lose {
+            color: #e76f51 !important;
+            text-shadow: 0 0 40px #e76f51, 0 0 80px #e76f51 !important;
+            animation: losePulse 0.5s infinite alternate !important;
+        }
+
+        @keyframes losePulse {
+            from { 
+                transform: scale(1);
+                text-shadow: 0 0 30px #e76f51, 0 0 60px #e76f51;
+            }
+            to { 
+                transform: scale(1.1);
+                text-shadow: 0 0 50px #e76f51, 0 0 100px #e76f51;
+            }
+        }
+
+        /* Control Panel */
+        #controlPanel {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 20px;
+            padding: 25px;
+            border: 2px solid #e9c46a;
+            box-shadow: 0 0 30px rgba(233, 196, 106, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            align-items: center;
+            min-width: 450px;
+            backdrop-filter: blur(10px);
+        }
+
+        .bet-controls {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .control-input {
+            flex: 1;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #2a9d8f;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.2rem;
+            min-width: 0;
+        }
+
+        .quick-bets {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .quick-bet-button {
+            padding: 10px 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid #e9c46a;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .quick-bet-button:hover {
+            background: rgba(233, 196, 106, 0.3);
+            transform: scale(1.05);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .action-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        #startButton {
+            background: linear-gradient(45deg, #2a9d8f, #21867a);
+            color: white;
+        }
+
+        #cashoutButton {
+            background: linear-gradient(45deg, #e9c46a, #e76f51);
+            color: white;
+            display: none;
+        }
+
+        #backButton {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 2px solid #e9c46a;
+        }
+
+        .action-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Settings Screen */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+            margin: 30px 0;
+            padding: 20px;
+        }
+
+        .setting-item {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid #ddd;
+            transition: all 0.3s;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .setting-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #2a9d8f;
+        }
+
+        .setting-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .setting-title {
+            font-size: 1.3rem;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .setting-desc {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Background Options */
+        .bg-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .bg-option {
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .bg-option:hover {
+            transform: scale(1.05);
+        }
+
+        .bg-option.active {
+            border-color: #e9c46a;
+            box-shadow: 0 0 15px rgba(233, 196, 106, 0.5);
+        }
+
+        .bg-space { background: linear-gradient(135deg, #0f0c29, #302b63); }
+        .bg-ocean { background: linear-gradient(135deg, #0a1931, #185adb); }
+        .bg-forest { background: linear-gradient(135deg, #0a3410, #1a5f2a); }
+        .bg-sunset { background: linear-gradient(135deg, #2c003e, #ff0080); }
+        .bg-neon { background: linear-gradient(135deg, #0a0a0a, #6600cc); }
+        .bg-gold { background: linear-gradient(135deg, #1a0f00, #ffd700); color: #000; }
+
+        /* Game History */
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .history-item {
+            padding: 12px;
+            margin-bottom: 8px;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-win { border-left-color: #2a9d8f; }
+        .history-lose { border-left-color: #e76f51; }
+
+        /* Promo Code Screen */
+        .promo-input-container {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .promo-input {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.5rem;
+            letter-spacing: 3px;
+            text-align: center;
+            border: 3px solid #2a9d8f;
+            border-radius: 15px;
+            background: white;
+            color: #333;
+            font-family: 'Courier New', monospace;
+        }
+
+        .promo-status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .promo-success {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        .promo-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+            display: block;
+            animation: shake 0.5s;
+        }
+
+        /* Tasks for promo code */
+        .tasks-container {
+            margin: 30px 0;
+            text-align: left;
+        }
+
+        .task-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+
+        .task-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .task-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .task-option {
+            padding: 8px 15px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .task-option:hover {
+            border-color: #2a9d8f;
+        }
+
+        .task-option.selected {
+            background: #2a9d8f;
+            color: white;
+            border-color: #2a9d8f;
+        }
+
+        /* Win/Lose Messages */
+        .message-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .message-content {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 50px;
+            border-radius: 25px;
+            border: 4px solid;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            animation: messageAppear 0.5s ease-out;
+        }
+
+        @keyframes messageAppear {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .win-message {
+            border-color: #2a9d8f;
+            box-shadow: 0 0 50px rgba(42, 157, 143, 0.5);
+        }
+
+        .lose-message {
+            border-color: #e76f51;
+            box-shadow: 0 0 50px rgba(231, 111, 81, 0.5);
+        }
+
+        .message-emoji {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        .message-text {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        .message-details {
+            font-size: 1.5rem;
+            color: #ccc;
+            margin-bottom: 30px;
+        }
+
+        .message-button {
+            background: linear-gradient(45deg, #2a9d8f, #e9c46a);
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        /* Settings Modals */
+        .settings-modal {
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        /* Sound Toggle */
+        .sound-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 80px;
+            height: 40px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 40px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 32px;
+            width: 32px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .toggle-slider {
+            background-color: #2a9d8f;
+        }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(40px);
+        }
+
+        /* Statistics Display */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px solid #ddd;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            color: #2a9d8f;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        /* Win Animation - Confetti */
+        .confetti {
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            background-color: #f00;
+            top: -10px;
+            z-index: 2000;
+            opacity: 0;
+        }
+
+        @keyframes confettiRain {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(100vh) rotate(720deg);
+            }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 3rem;
+            }
+            
+            .menu-button {
+                width: 250px;
+                padding: 15px 30px;
+            }
+            
+            .rocket-emoji {
+                font-size: 120px;
+            }
+            
+            #multiplierDisplay {
+                font-size: 4rem;
+            }
+            
+            #controlPanel {
+                min-width: 90%;
+                padding: 15px;
+            }
+            
+            .bet-controls {
+                flex-direction: column;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .country-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .bank-grid-compact {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+            
+            .bank-button-compact {
+                min-height: 70px;
+                font-size: 0.8rem;
+                padding: 10px 5px;
+            }
+            
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .bank-grid-compact {
+                grid-template-columns: 1fr;
+            }
+            
+            .bank-button-compact {
+                min-height: 65px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body class="game-bg-space">
+    <!-- Balance Display -->
+    <div id="balance">
+        $<span id="balanceAmount">1000</span>
+    </div>
+
+    <!-- Register Button / Username Display -->
+    <button id="registerButton">Register</button>
+    <div id="usernameDisplay"></div>
+
+    <!-- Register Modal -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <h2>Введите никнейм</h2>
+            <input type="text" id="nicknameInput" class="modal-input" placeholder="Введите ваш никнейм" maxlength="12">
+            <button id="saveNickname" class="modal-button">Сохранить никнейм</button>
+        </div>
+    </div>
+
+    <!-- Main Menu -->
+    <div id="mainMenu">
+        <h1 class="game-title">🎁 NEXT GIFTS CASINO</h1>
+        <button class="menu-button" id="playButton">🚀 PLAY GAME</button>
+        <button class="menu-button" id="depositButton">💰 DEPOSIT</button>
+        <button class="menu-button" id="withdrawButton">💸 WITHDRAW</button>
+        <button class="menu-button" id="settingsButton">⚙️ SETTINGS</button>
+        <button class="menu-button" id="promoCodeButton">🎫 PROMO CODE</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="gameScreen">
+        <div id="rocketArea">
+            <div class="rocket-emoji" id="rocketEmoji">🚀</div>
+            <div id="multiplierDisplay">1.00x</div>
+        </div>
+
+        <!-- Control Panel -->
+        <div id="controlPanel">
+            <div class="bet-controls">
+                <input type="number" id="betAmount" class="control-input" placeholder="Bet amount" min="1" value="10">
+                <input type="number" id="autoCashout" class="control-input" placeholder="Auto cashout" min="1.1" max="100" step="0.1" value="3.00">
+            </div>
+            
+            <div class="quick-bets">
+                <button class="quick-bet-button" data-amount="10">$10</button>
+                <button class="quick-bet-button" data-amount="50">$50</button>
+                <button class="quick-bet-button" data-amount="100">$100</button>
+                <button class="quick-bet-button" data-amount="500">$500</button>
+                <button class="quick-bet-button" data-amount="1000">$1000</button>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="action-button" id="backButton">← MENU</button>
+                <button class="action-button" id="startButton">LAUNCH</button>
+                <button class="action-button" id="cashoutButton">CASHOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Screen -->
+    <div id="settingsScreen">
+        <h1 class="game-title">⚙️ НАСТРОЙКИ</h1>
+        
+        <div class="settings-grid">
+            <div class="setting-item" id="bgSettingsBtn">
+                <div class="setting-icon">🎨</div>
+                <div class="setting-title">Фон игры</div>
+                <div class="setting-desc">Изменить цвет фона игры</div>
+            </div>
+            
+            <div class="setting-item" id="gameHistoryBtn">
+                <div class="setting-icon">📊</div>
+                <div class="setting-title">История игр</div>
+                <div class="setting-desc">Просмотр истории ваших игр</div>
+            </div>
+            
+            <div class="setting-item" id="soundSettingsBtn">
+                <div class="setting-icon">🔊</div>
+                <div class="setting-title">Настройки звука</div>
+                <div class="setting-desc">Включить/выключить звуки</div>
+            </div>
+            
+            <div class="setting-item" id="getPromoCodeBtn">
+                <div class="setting-icon">🔑</div>
+                <div class="setting-title">Получить промокод</div>
+                <div class="setting-desc">Выполнить задания для получения промокода</div>
+            </div>
+            
+            <div class="setting-item" id="statsBtn">
+                <div class="setting-icon">📈</div>
+                <div class="setting-title">Статистика</div>
+                <div class="setting-desc">Просмотр статистики игр</div>
+            </div>
+            
+            <div class="setting-item" id="helpBtn">
+                <div class="setting-icon">❓</div>
+                <div class="setting-title">Помощь и поддержка</div>
+                <div class="setting-desc">Получить помощь и связаться с поддержкой</div>
+            </div>
+        </div>
+        
+        <button class="menu-button" id="backFromSettings" style="margin-top: 40px; background: #333;">← НАЗАД В МЕНЮ</button>
+    </div>
+
+    <!-- Settings Modals -->
+    <div id="bgSettingsModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>🎨 Фон игры</h2>
+            <p style="color: #333; margin-bottom: 20px;">Выберите предпочтительный фон для игры:</p>
+            
+            <div class="bg-options">
+                <div class="bg-option bg-space active" data-bg="space">Космос</div>
+                <div class="bg-option bg-ocean" data-bg="ocean">Океан</div>
+                <div class="bg-option bg-forest" data-bg="forest">Лес</div>
+                <div class="bg-option bg-sunset" data-bg="sunset">Закат</div>
+                <div class="bg-option bg-neon" data-bg="neon">Неон</div>
+                <div class="bg-option bg-gold" data-bg="gold">Золото</div>
+            </div>
+            
+            <button class="modal-button" id="saveBgSettings">СОХРАНИТЬ</button>
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('bgSettingsModal').style.display='none'">НАЗАД</button>
+        </div>
+    </div>
+
+    <div id="gameHistoryModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>📊 История игр</h2>
+            <div id="historyList" class="history-list">
+                <!-- История будет добавлена здесь -->
+            </div>
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('gameHistoryModal').style.display='none'">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="soundSettingsModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>🔊 Настройки звука</h2>
+            
+            <div class="sound-toggle">
+                <span style="font-size: 1.2rem; color: #333;">Звуки игры:</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+                <span id="soundStatus" style="font-size: 1.2rem; color: #333;">Включены</span>
+            </div>
+            
+            <p style="color: #666; margin-top: 20px;">Звуковые эффекты включают взлет ракеты, взрыв, выигрыш и проигрыш.</p>
+            
+            <button class="modal-button" id="saveSoundSettings">СОХРАНИТЬ</button>
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('soundSettingsModal').style.display='none'">НАЗАД</button>
+        </div>
+    </div>
+
+    <div id="statsModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>📈 Статистика</h2>
+            
+            <div class="stats-container" id="statsContainer">
+                <!-- Статистика будет добавлена здесь -->
+            </div>
+            
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('statsModal').style.display='none'">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>❓ Помощь и поддержка</h2>
+            
+            <div style="text-align: left; color: #333; margin: 20px 0;">
+                <h3 style="color: #2a9d8f; margin-bottom: 15px;">Как играть:</h3>
+                <ul style="margin-left: 20px; margin-bottom: 20px;">
+                    <li style="margin-bottom: 10px;">1. Установите сумму ставки</li>
+                    <li style="margin-bottom: 10px;">2. Нажмите LAUNCH</li>
+                    <li style="margin-bottom: 10px;">3. Следите за множителем</li>
+                    <li style="margin-bottom: 10px;">4. Нажмите CASHOUT до взрыва ракеты</li>
+                </ul>
+                
+                <h3 style="color: #2a9d8f; margin-bottom: 15px;">Правила:</h3>
+                <ul style="margin-left: 20px; margin-bottom: 20px;">
+                    <li style="margin-bottom: 10px;">• Минимальная ставка: $1</li>
+                    <li style="margin-bottom: 10px;">• Максимальный множитель: 15x</li>
+                    <li style="margin-bottom: 10px;">• Auto cashout срабатывает автоматически</li>
+                    <li style="margin-bottom: 10px;">• Играйте ответственно!</li>
+                </ul>
+                
+                <h3 style="color: #2a9d8f; margin-bottom: 15px;">Техническая поддержка:</h3>
+                <p>Если у вас возникли проблемы, напишите нам на почту: <strong>support@nextgifts.com</strong></p>
+                <p>Или в Telegram: <strong>@nextgifts_support</strong></p>
+            </div>
+            
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('helpModal').style.display='none'">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="getPromoCodeModal" class="modal">
+        <div class="settings-form settings-modal">
+            <h2>🔑 Получить промокод</h2>
+            <p style="color: #333; margin-bottom: 20px;">Выполните эти задания, чтобы получить сегодняшний промокод:</p>
+            
+            <div class="tasks-container">
+                <div class="task-item">
+                    <div class="task-title">1. Подписаться на Telegram канал: next | gifts</div>
+                    <div class="task-options">
+                        <div class="task-option" data-task="1" data-value="subscribed">✅ Подписан</div>
+                        <div class="task-option" data-task="1" data-value="not">❌ Не подписан</div>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <!-- ИЗМЕНЕНИЕ: Исправлен текст вопроса о цвете -->
+                    <div class="task-title">2. Какой любимый цвет автора?</div>
+                    <div class="task-options">
+                        <div class="task-option" data-task="2" data-value="black">⚫ Черный</div>
+                        <div class="task-option" data-task="2" data-value="red">🔴 Красный</div>
+                        <div class="task-option" data-task="2" data-value="blue">🔵 Синий</div>
+                        <div class="task-option" data-task="2" data-value="gray">⚪ Серый</div>
+                        <div class="task-option" data-task="2" data-value="purple">🟣 Фиолетовый</div>
+                        <div class="task-option" data-task="2" data-value="orange">🟠 Оранжевый</div>
+                        <div class="task-option" data-task="2" data-value="green">🟢 Зеленый</div>
+                    </div>
+                </div>
+                
+                <div class="task-item">
+                    <!-- ИЗМЕНЕНИЕ: Исправлены ответы на вопрос о NFT -->
+                    <div class="task-title">3. Кому автор канала дарит NFT?</div>
+                    <div class="task-options">
+                        <div class="task-option" data-task="3" data-value="friendly">Самому дружному</div>
+                        <div class="task-option" data-task="3" data-value="beautiful">Самому красивому</div>
+                        <div class="task-option" data-task="3" data-value="active">Самому активному</div>
+                        <div class="task-option" data-task="3" data-value="smart">Самому умному</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="promoResult" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <h3 style="color: #333;">Сегодняшний промокод:</h3>
+                <div id="todayPromoCode" style="font-size: 2rem; font-family: 'Courier New', monospace; color: #2a9d8f; margin: 10px 0; letter-spacing: 3px;"></div>
+                <p style="color: #666;">Действителен 24 часа</p>
+            </div>
+            
+            <button class="modal-button" id="checkTasksBtn">ПРОВЕРИТЬ ОТВЕТЫ</button>
+            <button class="modal-button" style="background: #666;" onclick="document.getElementById('getPromoCodeModal').style.display='none'">НАЗАД</button>
+        </div>
+    </div>
+
+    <!-- Promo Code Screen -->
+    <div id="promoScreen">
+        <h1 class="game-title">🎫 ПРОМОКОД</h1>
+        
+        <div class="promo-form">
+            <h2>Введите промокод</h2>
+            <p style="color: #333; margin-bottom: 20px;">Введите промокод для получения подарка:</p>
+            
+            <div class="promo-input-container">
+                <input type="text" id="promoCodeInput" class="promo-input" placeholder="XXXX-XXXX-XXXX" maxlength="14">
+            </div>
+            
+            <div id="promoStatus" class="promo-status"></div>
+            
+            <button class="modal-button" id="applyPromoCode">АКТИВИРОВАТЬ ПРОМОКОД</button>
+            <button class="modal-button" id="backFromPromo" style="background: #666;">← НАЗАД В МЕНЮ</button>
+        </div>
+    </div>
+
+    <!-- Withdrawal Screens -->
+    <div id="withdrawalScreen">
+        <h1 class="game-title">💸 ВЫВОД ДЕНЕГ</h1>
+        <h2 style="color: #333; margin-bottom: 30px;">Выберите страну для вывода</h2>
+        
+        <div id="countryWithdrawalGrid" class="country-grid">
+            <!-- Страны будут добавлены JavaScript -->
+        </div>
+        
+        <button class="menu-button" id="backFromWithdrawal" style="margin-top: 40px; background: #333;">← НАЗАД В МЕНЮ</button>
+    </div>
+
+    <!-- Bank Selection Screen -->
+    <div id="bankSelectionScreen" style="display: none;">
+        <h1 class="game-title">🏦 ВЫБОР БАНКА</h1>
+        
+        <!-- Контейнер для центрирования -->
+        <div style="display: flex; justify-content: center; width: 100%; padding: 0 15px;">
+            <div class="bank-selection-container">
+                <div class="bank-selection-title">SELECT BANK</div>
+                <div id="bankSelectionGrid" class="bank-grid-compact">
+                    <!-- Банки будут добавлены JavaScript -->
+                </div>
+            </div>
+        </div>
+        
+        <button class="back-button-compact" id="backFromBankSelection">← НАЗАД К СТРАНАМ</button>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <div id="withdrawalFormModal" class="modal">
+        <div class="withdrawal-form">
+            <h2 id="selectedBankName"></h2>
+            <input type="tel" id="phoneInput" class="modal-input" placeholder="Введите номер телефона" maxlength="15">
+            <input type="number" id="withdrawAmountInput" class="modal-input" placeholder="Сумма для вывода" min="1">
+            <button id="submitWithdrawal" class="modal-button">ВЫВЕСТИ</button>
+            <button id="backFromForm" class="modal-button" style="background: #666;">НАЗАД</button>
+        </div>
+    </div>
+
+    <!-- Deposit Screen -->
+    <div id="depositScreen">
+        <h1 class="game-title">💰 ПОПОЛНЕНИЕ БАЛАНСА</h1>
+        <h2 style="color: #333; margin-bottom: 20px;">Выберите вашу страну</h2>
+        
+        <div class="country-grid">
+            <button class="country-button" data-country="RU" data-code="+7">
+                <span class="country-flag">🇷🇺</span>
+                <span>Россия</span>
+                <small>+7</small>
+            </button>
+            <button class="country-button" data-country="US" data-code="+1">
+                <span class="country-flag">🇺🇸</span>
+                <span>США</span>
+                <small>+1</small>
+            </button>
+            <button class="country-button" data-country="GB" data-code="+44">
+                <span class="country-flag">🇬🇧</span>
+                <span>Великобритания</span>
+                <small>+44</small>
+            </button>
+            <button class="country-button" data-country="DE" data-code="+49">
+                <span class="country-flag">🇩🇪</span>
+                <span>Германия</span>
+                <small>+49</small>
+            </button>
+            <button class="country-button" data-country="FR" data-code="+33">
+                <span class="country-flag">🇫🇷</span>
+                <span>Франция</span>
+                <small>+33</small>
+            </button>
+            <button class="country-button" data-country="IT" data-code="+39">
+                <span class="country-flag">🇮🇹</span>
+                <span>Италия</span>
+                <small>+39</small>
+            </button>
+            <button class="country-button" data-country="ES" data-code="+34">
+                <span class="country-flag">🇪🇸</span>
+                <span>Испания</span>
+                <small>+34</small>
+            </button>
+            <button class="country-button" data-country="PL" data-code="+48">
+                <span class="country-flag">🇵🇱</span>
+                <span>Польша</span>
+                <small>+48</small>
+            </button>
+            <button class="country-button" data-country="NL" data-code="+31">
+                <span class="country-flag">🇳🇱</span>
+                <span>Нидерланды</span>
+                <small>+31</small>
+            </button>
+            <button class="country-button" data-country="UA" data-code="+380">
+                <span class="country-flag">🇺🇦</span>
+                <span>Украина</span>
+                <small>+380</small>
+            </button>
+            <button class="country-button" data-country="KZ" data-code="+7">
+                <span class="country-flag">🇰🇿</span>
+                <span>Казахстан</span>
+                <small>+7</small>
+            </button>
+            <button class="country-button" data-country="EE" data-code="+372">
+                <span class="country-flag">🇪🇪</span>
+                <span>Эстония</span>
+                <small>+372</small>
+            </button>
+        </div>
+        
+        <button class="menu-button" id="continueDeposit" style="margin-top: 30px; background: #333;">ПРОДОЛЖИТЬ →</button>
+        <button class="menu-button" id="backFromDeposit" style="margin-top: 15px; background: #666;">← НАЗАД В МЕНЮ</button>
+    </div>
+
+    <!-- Deposit Form -->
+    <div id="depositFormModal" class="modal">
+        <div class="deposit-form">
+            <h2>Детали пополнения</h2>
+            
+            <div class="deposit-limit-info" id="depositLimitInfo">
+                <h3>Дневной лимит пополнения</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="depositProgress"></div>
+                </div>
+                <div id="depositLimitText">$0 из $500 использовано сегодня</div>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <input type="tel" id="countryCodeInput" class="modal-input" style="width: 30%;" readonly>
+                <input type="tel" id="depositPhoneInput" class="modal-input" style="flex: 1;" placeholder="Номер телефона">
+            </div>
+            
+            <input type="email" id="depositEmailInput" class="modal-input" placeholder="Email адрес">
+            <input type="text" id="depositCardInput" class="modal-input" placeholder="Номер карты (16 цифр)" maxlength="16">
+            <input type="number" id="depositAmountInput" class="modal-input" placeholder="Сумма пополнения ($1-$500)" min="1" max="500">
+            
+            <button id="submitDeposit" class="modal-button">ПОПОЛНИТЬ</button>
+            <button id="backFromDepositForm" class="modal-button" style="background: #666;">НАЗАД</button>
+        </div>
+    </div>
+
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loading-content">
+            <h1 id="loadingTitle">Обработка...</h1>
+            <div class="loading-spinner"></div>
+            <p id="loadingText">Пожалуйста, подождите...</p>
+        </div>
+    </div>
+
+    <!-- Success Screen -->
+    <div id="successScreen" class="success-screen">
+        <h1 id="successTitle">✅ Успешно!</h1>
+        <p id="successMessage" style="font-size: 1.5rem; color: #333; margin-bottom: 30px;"></p>
+        <button id="backToMenuFromSuccess">НАЗАД В МЕНЮ</button>
+    </div>
+
+    <!-- Win/Lose Messages -->
+    <div id="winMessage" class="message-overlay">
+        <div class="message-content win-message">
+            <div class="message-emoji">🎉</div>
+            <div class="message-text">ВЫ ВЫИГРАЛИ!</div>
+            <div class="message-details" id="winDetails"></div>
+            <button class="message-button" onclick="closeMessage()">ПРОДОЛЖИТЬ</button>
+        </div>
+    </div>
+
+    <div id="loseMessage" class="message-overlay">
+        <div class="message-content lose-message">
+            <div class="message-emoji">💥</div>
+            <div class="message-text">ВЫ ПРОИГРАЛИ!</div>
+            <div class="message-details" id="loseDetails"></div>
+            <button class="message-button" onclick="closeMessage()">ПРОДОЛЖИТЬ</button>
+        </div>
+    </div>
+
+    <script>
+        // Game Variables
+        let balance = 1000;
+        let currentBet = 0;
+        let multiplier = 1.00;
+        let gameActive = false;
+        let gameInterval;
+        let explosionPoint;
+        let username = '';
+        let gameSequence = [];
+        let currentGameIndex = 0;
+        let gameHistory = [];
+        
+        // Deposit variables
+        let selectedCountry = '';
+        let selectedCountryCode = '';
+        let verificationCode = '';
+        let todayDeposited = 0;
+        const MAX_DAILY_DEPOSIT = 500;
+
+        // Withdrawal variables
+        let selectedWithdrawalCountry = '';
+        let selectedWithdrawalBank = '';
+        
+        // Settings variables
+        let gameBackground = 'space';
+        let soundEnabled = true;
+        let promoCode = '';
+        let promoCodeExpiry = null;
+        let usedPromoCodes = [];
+
+        // Statistics
+        let stats = {
+            totalGames: 0,
+            totalWins: 0,
+            totalLosses: 0,
+            totalBet: 0,
+            totalWon: 0,
+            maxMultiplier: 0,
+            currentStreak: 0,
+            maxStreak: 0
+        };
+
+        // Promo code gifts (200 variants)
+        const promoGifts = [];
+        for (let i = 0; i < 200; i++) {
+            const baseAmount = 300 + (i % 151) * 10; // 300-450
+            const percentage = 10 + (i % 21); // 10-30%
+            promoGifts.push(`Вы выиграли +${percentage}% к сумме после пополнения от $${baseAmount}`);
+        }
+
+        // Countries and their banks (30 countries, 13 banks each)
+        const countriesWithBanks = {
+            'US': {
+                name: 'США',
+                flag: '🇺🇸',
+                banks: [
+                    { name: 'JPMorgan Chase', color: 'bank-color-blue' },
+                    { name: 'Bank of America', color: 'bank-color-red' },
+                    { name: 'Wells Fargo', color: 'bank-color-yellow' },
+                    { name: 'Citibank', color: 'bank-color-blue' },
+                    { name: 'Goldman Sachs', color: 'bank-color-gold' },
+                    { name: 'Morgan Stanley', color: 'bank-color-blue' },
+                    { name: 'U.S. Bank', color: 'bank-color-green' },
+                    { name: 'TD Bank', color: 'bank-color-green' },
+                    { name: 'PNC Bank', color: 'bank-color-blue' },
+                    { name: 'Capital One', color: 'bank-color-red' },
+                    { name: 'Charles Schwab', color: 'bank-color-blue' },
+                    { name: 'American Express', color: 'bank-color-blue' },
+                    { name: 'HSBC USA', color: 'bank-color-red' }
+                ]
+            },
+            'RU': {
+                name: 'Россия',
+                flag: '🇷🇺',
+                banks: [
+                    { name: 'Сбербанк', color: 'bank-color-green' },
+                    { name: 'ВТБ', color: 'bank-color-blue' },
+                    { name: 'Газпромбанк', color: 'bank-color-blue' },
+                    { name: 'Альфа-Банк', color: 'bank-color-red' },
+                    { name: 'Росбанк', color: 'bank-color-blue' },
+                    { name: 'Тинькофф', color: 'bank-color-yellow' },
+                    { name: 'Открытие', color: 'bank-color-blue' },
+                    { name: 'Промсвязьбанк', color: 'bank-color-blue' },
+                    { name: 'Райффайзенбанк', color: 'bank-color-orange' },
+                    { name: 'Россельхозбанк', color: 'bank-color-green' },
+                    { name: 'Совкомбанк', color: 'bank-color-blue' },
+                    { name: 'МТС Банк', color: 'bank-color-red' },
+                    { name: 'Уралсиб', color: 'bank-color-blue' }
+                ]
+            },
+            'GB': {
+                name: 'Великобритания',
+                flag: '🇬🇧',
+                banks: [
+                    { name: 'HSBC UK', color: 'bank-color-red' },
+                    { name: 'Barclays', color: 'bank-color-blue' },
+                    { name: 'Lloyds Bank', color: 'bank-color-green' },
+                    { name: 'NatWest', color: 'bank-color-purple' },
+                    { name: 'Santander UK', color: 'bank-color-red' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' },
+                    { name: 'RBS', color: 'bank-color-blue' },
+                    { name: 'Nationwide', color: 'bank-color-blue' },
+                    { name: 'TSB', color: 'bank-color-blue' },
+                    { name: 'Clydesdale Bank', color: 'bank-color-blue' },
+                    { name: 'Virgin Money', color: 'bank-color-red' },
+                    { name: 'Metro Bank', color: 'bank-color-blue' },
+                    { name: 'Monzo', color: 'bank-color-orange' }
+                ]
+            },
+            'DE': {
+                name: 'Германия',
+                flag: '🇩🇪',
+                banks: [
+                    { name: 'Deutsche Bank', color: 'bank-color-blue' },
+                    { name: 'Commerzbank', color: 'bank-color-blue' },
+                    { name: 'KfW', color: 'bank-color-green' },
+                    { name: 'DZ Bank', color: 'bank-color-blue' },
+                    { name: 'HypoVereinsbank', color: 'bank-color-blue' },
+                    { name: 'Postbank', color: 'bank-color-yellow' },
+                    { name: 'Sparkasse', color: 'bank-color-red' },
+                    { name: 'Volksbank', color: 'bank-color-green' },
+                    { name: 'Landesbank', color: 'bank-color-blue' },
+                    { name: 'N26', color: 'bank-color-blue' },
+                    { name: 'Comdirect', color: 'bank-color-orange' },
+                    { name: 'ING Germany', color: 'bank-color-orange' },
+                    { name: 'Santander Germany', color: 'bank-color-red' }
+                ]
+            },
+            'FR': {
+                name: 'Франция',
+                flag: '🇫🇷',
+                banks: [
+                    { name: 'BNP Paribas', color: 'bank-color-green' },
+                    { name: 'Crédit Agricole', color: 'bank-color-green' },
+                    { name: 'Société Générale', color: 'bank-color-blue' },
+                    { name: 'Groupe BPCE', color: 'bank-color-blue' },
+                    { name: 'Crédit Mutuel', color: 'bank-color-green' },
+                    { name: 'La Banque Postale', color: 'bank-color-blue' },
+                    { name: 'HSBC France', color: 'bank-color-red' },
+                    { name: 'CIC', color: 'bank-color-blue' },
+                    { name: 'LCL', color: 'bank-color-green' },
+                    { name: 'Natixis', color: 'bank-color-blue' },
+                    { name: 'AXA Banque', color: 'bank-color-blue' },
+                    { name: 'Fortuneo', color: 'bank-color-orange' },
+                    { name: 'Boursorama', color: 'bank-color-orange' }
+                ]
+            },
+            'IT': {
+                name: 'Италия',
+                flag: '🇮🇹',
+                banks: [
+                    { name: 'Intesa Sanpaolo', color: 'bank-color-blue' },
+                    { name: 'UniCredit', color: 'bank-color-red' },
+                    { name: 'Monte dei Paschi', color: 'bank-color-green' },
+                    { name: 'Banco BPM', color: 'bank-color-blue' },
+                    { name: 'UBI Banca', color: 'bank-color-blue' },
+                    { name: 'BNL', color: 'bank-color-blue' },
+                    { name: 'Credito Emiliano', color: 'bank-color-red' },
+                    { name: 'Mediobanca', color: 'bank-color-blue' },
+                    { name: 'Banca Popolare', color: 'bank-color-green' },
+                    { name: 'Banca Sella', color: 'bank-color-blue' },
+                    { name: 'FinecoBank', color: 'bank-color-orange' },
+                    { name: 'CheBanca!', color: 'bank-color-blue' },
+                    { name: 'Banca IFIS', color: 'bank-color-blue' }
+                ]
+            },
+            'ES': {
+                name: 'Испания',
+                flag: '🇪🇸',
+                banks: [
+                    { name: 'Santander', color: 'bank-color-red' },
+                    { name: 'BBVA', color: 'bank-color-blue' },
+                    { name: 'CaixaBank', color: 'bank-color-orange' },
+                    { name: 'Bankinter', color: 'bank-color-red' },
+                    { name: 'Sabadell', color: 'bank-color-blue' },
+                    { name: 'Unicaja', color: 'bank-color-green' },
+                    { name: 'Kutxabank', color: 'bank-color-green' },
+                    { name: 'Ibercaja', color: 'bank-color-red' },
+                    { name: 'Abanca', color: 'bank-color-blue' },
+                    { name: 'Bankia', color: 'bank-color-red' },
+                    { name: 'Cajamar', color: 'bank-color-green' },
+                    { name: 'EVO Banco', color: 'bank-color-orange' },
+                    { name: 'Openbank', color: 'bank-color-blue' }
+                ]
+            },
+            'PL': {
+                name: 'Польша',
+                flag: '🇵🇱',
+                banks: [
+                    { name: 'PKO BP', color: 'bank-color-blue' },
+                    { name: 'Santander PL', color: 'bank-color-red' },
+                    { name: 'ING Poland', color: 'bank-color-orange' },
+                    { name: 'mBank', color: 'bank-color-green' },
+                    { name: 'Millennium', color: 'bank-color-blue' },
+                    { name: 'Alior Bank', color: 'bank-color-blue' },
+                    { name: 'BNP Paribas PL', color: 'bank-color-green' },
+                    { name: 'Credit Agricole PL', color: 'bank-color-green' },
+                    { name: 'Getin Bank', color: 'bank-color-blue' },
+                    { name: 'Pekao SA', color: 'bank-color-blue' },
+                    { name: 'Raiffeisen PL', color: 'bank-color-orange' },
+                    { name: 'Nest Bank', color: 'bank-color-blue' },
+                    { name: 'Toyota Bank', color: 'bank-color-red' }
+                ]
+            },
+            'NL': {
+                name: 'Нидерланды',
+                flag: '🇳🇱',
+                banks: [
+                    { name: 'ING Group', color: 'bank-color-orange' },
+                    { name: 'ABN AMRO', color: 'bank-color-blue' },
+                    { name: 'Rabobank', color: 'bank-color-green' },
+                    { name: 'SNS Bank', color: 'bank-color-blue' },
+                    { name: 'Van Lanschot', color: 'bank-color-blue' },
+                    { name: 'Triodos Bank', color: 'bank-color-green' },
+                    { name: 'Bunq', color: 'bank-color-green' },
+                    { name: 'KNAB', color: 'bank-color-orange' },
+                    { name: 'Moneyou', color: 'bank-color-blue' },
+                    { name: 'NIBC', color: 'bank-color-blue' },
+                    { name: 'ASN Bank', color: 'bank-color-green' },
+                    { name: 'RegioBank', color: 'bank-color-blue' },
+                    { name: 'Revolut NL', color: 'bank-color-purple' }
+                ]
+            },
+            'UA': {
+                name: 'Украина',
+                flag: '🇺🇦',
+                banks: [
+                    { name: 'ПриватБанк', color: 'bank-color-blue' },
+                    { name: 'Ощадбанк', color: 'bank-color-green' },
+                    { name: 'Укрэксимбанк', color: 'bank-color-blue' },
+                    { name: 'Райффайзен UA', color: 'bank-color-orange' },
+                    { name: 'Укрсиббанк', color: 'bank-color-blue' },
+                    { name: 'ПУМБ', color: 'bank-color-blue' },
+                    { name: 'Альфа-Банк UA', color: 'bank-color-red' },
+                    { name: 'ОТП Банк UA', color: 'bank-color-blue' },
+                    { name: 'Креди Агриколь UA', color: 'bank-color-green' },
+                    { name: 'Укргазбанк', color: 'bank-color-blue' },
+                    { name: 'ProCredit Bank', color: 'bank-color-green' },
+                    { name: 'ING Украина', color: 'bank-color-orange' },
+                    { name: 'Правэкс Банк', color: 'bank-color-blue' }
+                ]
+            },
+            'KZ': {
+                name: 'Казахстан',
+                flag: '🇰🇿',
+                banks: [
+                    { name: 'Halyk Bank', color: 'bank-color-blue' },
+                    { name: 'Сбербанк KZ', color: 'bank-color-green' },
+                    { name: 'Kaspi Bank', color: 'bank-color-red' },
+                    { name: 'ForteBank', color: 'bank-color-blue' },
+                    { name: 'Bank CenterCredit', color: 'bank-color-blue' },
+                    { name: 'Евразийский Банк', color: 'bank-color-blue' },
+                    { name: 'Home Credit KZ', color: 'bank-color-red' },
+                    { name: 'Альфа-Банк KZ', color: 'bank-color-red' },
+                    { name: 'Цесна Банк', color: 'bank-color-blue' },
+                    { name: 'Нурбанк', color: 'bank-color-blue' },
+                    { name: 'ВТБ KZ', color: 'bank-color-blue' },
+                    { name: 'Zaman Bank', color: 'bank-color-green' },
+                    { name: 'Алтын Банк', color: 'bank-color-yellow' }
+                ]
+            },
+            'EE': {
+                name: 'Эстония',
+                flag: '🇪🇪',
+                banks: [
+                    { name: 'Swedbank EE', color: 'bank-color-blue' },
+                    { name: 'SEB Estonia', color: 'bank-color-orange' },
+                    { name: 'Luminor', color: 'bank-color-blue' },
+                    { name: 'LHV Pank', color: 'bank-color-green' },
+                    { name: 'Coop Pank', color: 'bank-color-green' },
+                    { name: 'Bigbank', color: 'bank-color-orange' },
+                    { name: 'Inbank', color: 'bank-color-blue' },
+                    { name: 'TF Bank EE', color: 'bank-color-blue' },
+                    { name: 'Citadele', color: 'bank-color-red' },
+                    { name: 'Versobank', color: 'bank-color-blue' },
+                    { name: 'Estonian Credit Bank', color: 'bank-color-blue' },
+                    { name: 'Folksam Bank', color: 'bank-color-blue' },
+                    { name: 'Nordea Estonia', color: 'bank-color-blue' }
+                ]
+            },
+            'CN': {
+                name: 'Китай',
+                flag: '🇨🇳',
+                banks: [
+                    { name: 'ICBC', color: 'bank-color-red' },
+                    { name: 'CCB', color: 'bank-color-blue' },
+                    { name: 'ABC', color: 'bank-color-green' },
+                    { name: 'Bank of China', color: 'bank-color-red' },
+                    { name: 'Bank of Comm', color: 'bank-color-blue' },
+                    { name: 'China Merchants', color: 'bank-color-blue' },
+                    { name: 'Ping An Bank', color: 'bank-color-orange' },
+                    { name: 'China CITIC', color: 'bank-color-red' },
+                    { name: 'SPDB', color: 'bank-color-blue' },
+                    { name: 'China Minsheng', color: 'bank-color-green' },
+                    { name: 'Industrial Bank', color: 'bank-color-blue' },
+                    { name: 'CMBC', color: 'bank-color-blue' },
+                    { name: 'Hua Xia Bank', color: 'bank-color-red' }
+                ]
+            },
+            'JP': {
+                name: 'Япония',
+                flag: '🇯🇵',
+                banks: [
+                    { name: 'MUFG Bank', color: 'bank-color-blue' },
+                    { name: 'Mizuho Bank', color: 'bank-color-red' },
+                    { name: 'Sumitomo Mitsui', color: 'bank-color-blue' },
+                    { name: 'Resona Bank', color: 'bank-color-blue' },
+                    { name: 'SBI Shinsei', color: 'bank-color-blue' },
+                    { name: 'Aozora Bank', color: 'bank-color-blue' },
+                    { name: 'Chiba Bank', color: 'bank-color-green' },
+                    { name: 'Hokuhoku FG', color: 'bank-color-blue' },
+                    { name: 'Fukuoka FG', color: 'bank-color-blue' },
+                    { name: 'Hiroshima Bank', color: 'bank-color-blue' },
+                    { name: 'Bank of Kyoto', color: 'bank-color-blue' },
+                    { name: 'Shizuoka Bank', color: 'bank-color-blue' },
+                    { name: 'Yamaguchi Bank', color: 'bank-color-blue' }
+                ]
+            },
+            'KR': {
+                name: 'Южная Корея',
+                flag: '🇰🇷',
+                banks: [
+                    { name: 'KB Kookmin', color: 'bank-color-red' },
+                    { name: 'Shinhan Bank', color: 'bank-color-blue' },
+                    { name: 'Hana Bank', color: 'bank-color-green' },
+                    { name: 'Woori Bank', color: 'bank-color-blue' },
+                    { name: 'NH Bank', color: 'bank-color-green' },
+                    { name: 'IBK', color: 'bank-color-blue' },
+                    { name: 'KDB Bank', color: 'bank-color-blue' },
+                    { name: 'Daegu Bank', color: 'bank-color-blue' },
+                    { name: 'Busan Bank', color: 'bank-color-blue' },
+                    { name: 'Jeonbuk Bank', color: 'bank-color-blue' },
+                    { name: 'Kakao Bank', color: 'bank-color-yellow' },
+                    { name: 'K Bank', color: 'bank-color-blue' },
+                    { name: 'Toss Bank', color: 'bank-color-purple' }
+                ]
+            },
+            'IN': {
+                name: 'Индия',
+                flag: '🇮🇳',
+                banks: [
+                    { name: 'SBI', color: 'bank-color-blue' },
+                    { name: 'HDFC Bank', color: 'bank-color-blue' },
+                    { name: 'ICICI Bank', color: 'bank-color-blue' },
+                    { name: 'Axis Bank', color: 'bank-color-blue' },
+                    { name: 'Kotak Mahindra', color: 'bank-color-blue' },
+                    { name: 'IndusInd Bank', color: 'bank-color-blue' },
+                    { name: 'YES Bank', color: 'bank-color-red' },
+                    { name: 'Punjab National', color: 'bank-color-blue' },
+                    { name: 'Bank of Baroda', color: 'bank-color-blue' },
+                    { name: 'Canara Bank', color: 'bank-color-blue' },
+                    { name: 'Union Bank', color: 'bank-color-blue' },
+                    { name: 'IDFC First', color: 'bank-color-blue' },
+                    { name: 'Bank of India', color: 'bank-color-blue' }
+                ]
+            },
+            'BR': {
+                name: 'Бразилия',
+                flag: '🇧🇷',
+                banks: [
+                    { name: 'Itaú Unibanco', color: 'bank-color-orange' },
+                    { name: 'Bradesco', color: 'bank-color-blue' },
+                    { name: 'Santander BR', color: 'bank-color-red' },
+                    { name: 'Banco do Brasil', color: 'bank-color-yellow' },
+                    { name: 'Caixa Econômica', color: 'bank-color-blue' },
+                    { name: 'Sicredi', color: 'bank-color-green' },
+                    { name: 'Sicoob', color: 'bank-color-green' },
+                    { name: 'Banrisul', color: 'bank-color-blue' },
+                    { name: 'BTG Pactual', color: 'bank-color-blue' },
+                    { name: 'Inter', color: 'bank-color-orange' },
+                    { name: 'Nubank', color: 'bank-color-purple' },
+                    { name: 'C6 Bank', color: 'bank-color-black' },
+                    { name: 'Neon', color: 'bank-color-cyan' }
+                ]
+            },
+            'CA': {
+                name: 'Канада',
+                flag: '🇨🇦',
+                banks: [
+                    { name: 'RBC', color: 'bank-color-blue' },
+                    { name: 'TD Canada', color: 'bank-color-green' },
+                    { name: 'Scotiabank', color: 'bank-color-red' },
+                    { name: 'BMO', color: 'bank-color-blue' },
+                    { name: 'CIBC', color: 'bank-color-blue' },
+                    { name: 'National Bank', color: 'bank-color-blue' },
+                    { name: 'Desjardins', color: 'bank-color-green' },
+                    { name: 'HSBC Canada', color: 'bank-color-red' },
+                    { name: 'Laurentian Bank', color: 'bank-color-blue' },
+                    { name: 'Canadian Western', color: 'bank-color-blue' },
+                    { name: 'Equitable Bank', color: 'bank-color-blue' },
+                    { name: 'Tangerine', color: 'bank-color-orange' },
+                    { name: 'Simplii Financial', color: 'bank-color-red' }
+                ]
+            },
+            'AU': {
+                name: 'Австралия',
+                flag: '🇦🇺',
+                banks: [
+                    { name: 'Commonwealth', color: 'bank-color-yellow' },
+                    { name: 'Westpac', color: 'bank-color-red' },
+                    { name: 'ANZ', color: 'bank-color-blue' },
+                    { name: 'NAB', color: 'bank-color-blue' },
+                    { name: 'Macquarie', color: 'bank-color-blue' },
+                    { name: 'ING Australia', color: 'bank-color-orange' },
+                    { name: 'Suncorp', color: 'bank-color-blue' },
+                    { name: 'Bank of Queensland', color: 'bank-color-blue' },
+                    { name: 'Bendigo Bank', color: 'bank-color-blue' },
+                    { name: 'AMP Bank', color: 'bank-color-blue' },
+                    { name: 'HSBC Australia', color: 'bank-color-red' },
+                    { name: 'Citibank AU', color: 'bank-color-blue' },
+                    { name: 'Bankwest', color: 'bank-color-red' }
+                ]
+            },
+            'CH': {
+                name: 'Швейцария',
+                flag: '🇨🇭',
+                banks: [
+                    { name: 'UBS', color: 'bank-color-blue' },
+                    { name: 'Credit Suisse', color: 'bank-color-blue' },
+                    { name: 'Raiffeisen CH', color: 'bank-color-green' },
+                    { name: 'Zürcher Kantonal', color: 'bank-color-blue' },
+                    { name: 'PostFinance', color: 'bank-color-yellow' },
+                    { name: 'Migros Bank', color: 'bank-color-orange' },
+                    { name: 'Banque Cantonale', color: 'bank-color-blue' },
+                    { name: 'Julius Bär', color: 'bank-color-blue' },
+                    { name: 'Lombard Odier', color: 'bank-color-blue' },
+                    { name: 'Pictet', color: 'bank-color-blue' },
+                    { name: 'EFG International', color: 'bank-color-blue' },
+                    { name: 'Bank Vontobel', color: 'bank-color-blue' },
+                    { name: 'Bank Coop', color: 'bank-color-green' }
+                ]
+            },
+            'SE': {
+                name: 'Швеция',
+                flag: '🇸🇪',
+                banks: [
+                    { name: 'Swedbank', color: 'bank-color-blue' },
+                    { name: 'SEB', color: 'bank-color-orange' },
+                    { name: 'Handelsbanken', color: 'bank-color-blue' },
+                    { name: 'Nordea SE', color: 'bank-color-blue' },
+                    { name: 'Danske Bank', color: 'bank-color-red' },
+                    { name: 'ICA Banken', color: 'bank-color-blue' },
+                    { name: 'Länsförsäkringar', color: 'bank-color-green' },
+                    { name: 'Skandiabanken', color: 'bank-color-blue' },
+                    { name: 'Avanza Bank', color: 'bank-color-orange' },
+                    { name: 'Nordnet', color: 'bank-color-blue' },
+                    { name: 'Klarna', color: 'bank-color-pink' },
+                    { name: 'Resurs Bank', color: 'bank-color-blue' },
+                    { name: 'Santander SE', color: 'bank-color-red' }
+                ]
+            },
+            'NO': {
+                name: 'Норвегия',
+                flag: '🇳🇴',
+                banks: [
+                    { name: 'DNB', color: 'bank-color-blue' },
+                    { name: 'Nordea NO', color: 'bank-color-blue' },
+                    { name: 'Handelsbanken NO', color: 'bank-color-blue' },
+                    { name: 'SpareBank 1', color: 'bank-color-blue' },
+                    { name: 'Santander NO', color: 'bank-color-red' },
+                    { name: 'Storebrand', color: 'bank-color-blue' },
+                    { name: 'Sbanken', color: 'bank-color-blue' },
+                    { name: 'Skandiabanken', color: 'bank-color-blue' },
+                    { name: 'Danske Bank NO', color: 'bank-color-red' },
+                    { name: 'SEB NO', color: 'bank-color-orange' },
+                    { name: 'Sparebanken Vest', color: 'bank-color-blue' },
+                    { name: 'Sparebanken Sør', color: 'bank-color-blue' },
+                    { name: 'BN Bank', color: 'bank-color-blue' }
+                ]
+            },
+            'DK': {
+                name: 'Дания',
+                flag: '🇩🇰',
+                banks: [
+                    { name: 'Danske Bank', color: 'bank-color-red' },
+                    { name: 'Nordea DK', color: 'bank-color-blue' },
+                    { name: 'Jyske Bank', color: 'bank-color-blue' },
+                    { name: 'Sydbank', color: 'bank-color-blue' },
+                    { name: 'Nykredit', color: 'bank-color-blue' },
+                    { name: 'Handelsbanken DK', color: 'bank-color-blue' },
+                    { name: 'Spar Nord', color: 'bank-color-blue' },
+                    { name: 'Arbejdernes Lands', color: 'bank-color-blue' },
+                    { name: 'Middelfart Sparek', color: 'bank-color-blue' },
+                    { name: 'Totalbanken', color: 'bank-color-blue' },
+                    { name: 'Santander DK', color: 'bank-color-red' },
+                    { name: 'SEB DK', color: 'bank-color-orange' },
+                    { name: 'Lån & Spar Bank', color: 'bank-color-blue' }
+                ]
+            },
+            'FI': {
+                name: 'Финляндия',
+                flag: '🇫🇮',
+                banks: [
+                    { name: 'Nordea FI', color: 'bank-color-blue' },
+                    { name: 'OP Financial', color: 'bank-color-green' },
+                    { name: 'Danske Bank FI', color: 'bank-color-red' },
+                    { name: 'Handelsbanken FI', color: 'bank-color-blue' },
+                    { name: 'Ålandsbanken', color: 'bank-color-blue' },
+                    { name: 'S-Bank', color: 'bank-color-blue' },
+                    { name: 'POP Bank', color: 'bank-color-blue' },
+                    { name: 'Savings Bank', color: 'bank-color-blue' },
+                    { name: 'Aktia Bank', color: 'bank-color-blue' },
+                    { name: 'Bank of Åland', color: 'bank-color-blue' },
+                    { name: 'Holvi', color: 'bank-color-green' },
+                    { name: 'Klarna FI', color: 'bank-color-pink' },
+                    { name: 'Revolut FI', color: 'bank-color-purple' }
+                ]
+            },
+            'TR': {
+                name: 'Турция',
+                flag: '🇹🇷',
+                banks: [
+                    { name: 'Ziraat Bankası', color: 'bank-color-green' },
+                    { name: 'İş Bankası', color: 'bank-color-blue' },
+                    { name: 'Garanti BBVA', color: 'bank-color-blue' },
+                    { name: 'Akbank', color: 'bank-color-red' },
+                    { name: 'Yapı Kredi', color: 'bank-color-blue' },
+                    { name: 'VakıfBank', color: 'bank-color-green' },
+                    { name: 'Halkbank', color: 'bank-color-green' },
+                    { name: 'Finansbank', color: 'bank-color-blue' },
+                    { name: 'DenizBank', color: 'bank-color-blue' },
+                    { name: 'Şekerbank', color: 'bank-color-green' },
+                    { name: 'TEB', color: 'bank-color-blue' },
+                    { name: 'ING Turkey', color: 'bank-color-orange' },
+                    { name: 'QNB Finansbank', color: 'bank-color-blue' }
+                ]
+            },
+            'SA': {
+                name: 'Саудовская Аравия',
+                flag: '🇸🇦',
+                banks: [
+                    { name: 'Samba Financial', color: 'bank-color-green' },
+                    { name: 'Al Rajhi Bank', color: 'bank-color-green' },
+                    { name: 'Riyad Bank', color: 'bank-color-blue' },
+                    { name: 'Saudi National', color: 'bank-color-green' },
+                    { name: 'Banque Saudi', color: 'bank-color-blue' },
+                    { name: 'Arab National Bank', color: 'bank-color-blue' },
+                    { name: 'Saudi Investment', color: 'bank-color-blue' },
+                    { name: 'Saudi British', color: 'bank-color-blue' },
+                    { name: 'Alinma Bank', color: 'bank-color-green' },
+                    { name: 'Bank AlBilad', color: 'bank-color-green' },
+                    { name: 'Bank AlJazira', color: 'bank-color-green' },
+                    { name: 'Saudi Hollandi', color: 'bank-color-blue' },
+                    { name: 'Moscow-Saudi', color: 'bank-color-blue' }
+                ]
+            },
+            'AE': {
+                name: 'ОАЭ',
+                flag: '🇦🇪',
+                banks: [
+                    { name: 'Emirates NBD', color: 'bank-color-red' },
+                    { name: 'First Abu Dhabi', color: 'bank-color-blue' },
+                    { name: 'Abu Dhabi Comm', color: 'bank-color-blue' },
+                    { name: 'Dubai Islamic', color: 'bank-color-green' },
+                    { name: 'Mashreq Bank', color: 'bank-color-blue' },
+                    { name: 'RAKBANK', color: 'bank-color-blue' },
+                    { name: 'Commercial Bank', color: 'bank-color-blue' },
+                    { name: 'HSBC UAE', color: 'bank-color-red' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' },
+                    { name: 'Citibank UAE', color: 'bank-color-blue' },
+                    { name: 'Al Hilal Bank', color: 'bank-color-green' },
+                    { name: 'Noor Bank', color: 'bank-color-blue' },
+                    { name: 'Sharjah Islamic', color: 'bank-color-green' }
+                ]
+            },
+            'SG': {
+                name: 'Сингапур',
+                flag: '🇸🇬',
+                banks: [
+                    { name: 'DBS Bank', color: 'bank-color-red' },
+                    { name: 'UOB', color: 'bank-color-green' },
+                    { name: 'OCBC Bank', color: 'bank-color-blue' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' },
+                    { name: 'Citibank SG', color: 'bank-color-blue' },
+                    { name: 'Maybank SG', color: 'bank-color-blue' },
+                    { name: 'HSBC SG', color: 'bank-color-red' },
+                    { name: 'Bank of China', color: 'bank-color-red' },
+                    { name: 'ICBC SG', color: 'bank-color-red' },
+                    { name: 'Bangkok Bank', color: 'bank-color-blue' },
+                    { name: 'Mizuho SG', color: 'bank-color-red' },
+                    { name: 'RHB Bank', color: 'bank-color-blue' },
+                    { name: 'CIMB Bank', color: 'bank-color-blue' }
+                ]
+            },
+            'MY': {
+                name: 'Малайзия',
+                flag: '🇲🇾',
+                banks: [
+                    { name: 'Maybank', color: 'bank-color-blue' },
+                    { name: 'CIMB Bank', color: 'bank-color-blue' },
+                    { name: 'Public Bank', color: 'bank-color-blue' },
+                    { name: 'RHB Bank', color: 'bank-color-blue' },
+                    { name: 'Hong Leong Bank', color: 'bank-color-blue' },
+                    { name: 'AmBank', color: 'bank-color-blue' },
+                    { name: 'UOB Malaysia', color: 'bank-color-green' },
+                    { name: 'OCBC Malaysia', color: 'bank-color-blue' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' },
+                    { name: 'HSBC Malaysia', color: 'bank-color-red' },
+                    { name: 'Bank Islam', color: 'bank-color-green' },
+                    { name: 'Bank Muamalat', color: 'bank-color-green' },
+                    { name: 'Affin Bank', color: 'bank-color-blue' }
+                ]
+            },
+            'TH': {
+                name: 'Таиланд',
+                flag: '🇹🇭',
+                banks: [
+                    { name: 'Bangkok Bank', color: 'bank-color-blue' },
+                    { name: 'Krungthai Bank', color: 'bank-color-green' },
+                    { name: 'Kasikornbank', color: 'bank-color-blue' },
+                    { name: 'Siam Commercial', color: 'bank-color-blue' },
+                    { name: 'Bank of Ayudhya', color: 'bank-color-blue' },
+                    { name: 'TMB Bank', color: 'bank-color-blue' },
+                    { name: 'Thanachart Bank', color: 'bank-color-blue' },
+                    { name: 'CIMB Thai', color: 'bank-color-blue' },
+                    { name: 'UOB Thailand', color: 'bank-color-green' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' },
+                    { name: 'Citibank Thai', color: 'bank-color-blue' },
+                    { name: 'HSBC Thailand', color: 'bank-color-red' },
+                    { name: 'ICBC Thai', color: 'bank-color-red' }
+                ]
+            },
+            'ID': {
+                name: 'Индонезия',
+                flag: '🇮🇩',
+                banks: [
+                    { name: 'Bank Mandiri', color: 'bank-color-red' },
+                    { name: 'Bank Rakyat', color: 'bank-color-green' },
+                    { name: 'Bank Central Asia', color: 'bank-color-blue' },
+                    { name: 'Bank Negara', color: 'bank-color-blue' },
+                    { name: 'CIMB Niaga', color: 'bank-color-blue' },
+                    { name: 'Panin Bank', color: 'bank-color-blue' },
+                    { name: 'Danamon', color: 'bank-color-blue' },
+                    { name: 'Maybank ID', color: 'bank-color-blue' },
+                    { name: 'UOB Indonesia', color: 'bank-color-green' },
+                    { name: 'OCBC NISP', color: 'bank-color-blue' },
+                    { name: 'HSBC ID', color: 'bank-color-red' },
+                    { name: 'Citibank ID', color: 'bank-color-blue' },
+                    { name: 'Standard Chartered', color: 'bank-color-blue' }
+                ]
+            },
+            'VN': {
+                name: 'Вьетнам',
+                flag: '🇻🇳',
+                banks: [
+                    { name: 'Vietcombank', color: 'bank-color-blue' },
+                    { name: 'BIDV', color: 'bank-color-red' },
+                    { name: 'VietinBank', color: 'bank-color-blue' },
+                    { name: 'Agribank', color: 'bank-color-green' },
+                    { name: 'Sacombank', color: 'bank-color-blue' },
+                    { name: 'Techcombank', color: 'bank-color-blue' },
+                    { name: 'ACB', color: 'bank-color-blue' },
+                    { name: 'VPBank', color: 'bank-color-blue' },
+                    { name: 'MBBank', color: 'bank-color-blue' },
+                    { name: 'TPBank', color: 'bank-color-blue' },
+                    { name: 'HDBank', color: 'bank-color-blue' },
+                    { name: 'OCB', color: 'bank-color-blue' },
+                    { name: 'VIB', color: 'bank-color-blue' }
+                ]
+            }
+        };
+
+        // DOM Elements
+        const balanceElement = document.getElementById('balanceAmount');
+        const mainMenu = document.getElementById('mainMenu');
+        const gameScreen = document.getElementById('gameScreen');
+        const playButton = document.getElementById('playButton');
+        const registerButton = document.getElementById('registerButton');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const registerModal = document.getElementById('registerModal');
+        const nicknameInput = document.getElementById('nicknameInput');
+        const saveNicknameButton = document.getElementById('saveNickname');
+        const betAmountInput = document.getElementById('betAmount');
+        const startButton = document.getElementById('startButton');
+        const cashoutButton = document.getElementById('cashoutButton');
+        const backButton = document.getElementById('backButton');
+        const multiplierDisplay = document.getElementById('multiplierDisplay');
+        const rocketEmoji = document.getElementById('rocketEmoji');
+        const autoCashoutInput = document.getElementById('autoCashout');
+        const winMessage = document.getElementById('winMessage');
+        const loseMessage = document.getElementById('loseMessage');
+        const depositButton = document.getElementById('depositButton');
+        const withdrawButton = document.getElementById('withdrawButton');
+        const settingsButton = document.getElementById('settingsButton');
+        const promoCodeButton = document.getElementById('promoCodeButton');
+        const withdrawalScreen = document.getElementById('withdrawalScreen');
+        const backFromWithdrawal = document.getElementById('backFromWithdrawal');
+        const withdrawalFormModal = document.getElementById('withdrawalFormModal');
+        const selectedBankName = document.getElementById('selectedBankName');
+        const phoneInput = document.getElementById('phoneInput');
+        const withdrawAmountInput = document.getElementById('withdrawAmountInput');
+        const submitWithdrawal = document.getElementById('submitWithdrawal');
+        const backFromForm = document.getElementById('backFromForm');
+        const loadingScreen = document.getElementById('loadingScreen');
+        const loadingTitle = document.getElementById('loadingTitle');
+        const loadingText = document.getElementById('loadingText');
+        const successScreen = document.getElementById('successScreen');
+        const successTitle = document.getElementById('successTitle');
+        const successMessage = document.getElementById('successMessage');
+        const backToMenuFromSuccess = document.getElementById('backToMenuFromSuccess');
+
+        // Deposit elements
+        const depositScreen = document.getElementById('depositScreen');
+        const continueDeposit = document.getElementById('continueDeposit');
+        const backFromDeposit = document.getElementById('backFromDeposit');
+        const depositFormModal = document.getElementById('depositFormModal');
+        const countryCodeInput = document.getElementById('countryCodeInput');
+        const depositPhoneInput = document.getElementById('depositPhoneInput');
+        const depositEmailInput = document.getElementById('depositEmailInput');
+        const depositCardInput = document.getElementById('depositCardInput');
+        const depositAmountInput = document.getElementById('depositAmountInput');
+        const submitDeposit = document.getElementById('submitDeposit');
+        const backFromDepositForm = document.getElementById('backFromDepositForm');
+
+        // Settings elements
+        const settingsScreen = document.getElementById('settingsScreen');
+        const backFromSettings = document.getElementById('backFromSettings');
+        const bgSettingsBtn = document.getElementById('bgSettingsBtn');
+        const gameHistoryBtn = document.getElementById('gameHistoryBtn');
+        const soundSettingsBtn = document.getElementById('soundSettingsBtn');
+        const getPromoCodeBtn = document.getElementById('getPromoCodeBtn');
+        const statsBtn = document.getElementById('statsBtn');
+        const helpBtn = document.getElementById('helpBtn');
+
+        // Promo code elements
+        const promoScreen = document.getElementById('promoScreen');
+        const promoCodeInput = document.getElementById('promoCodeInput');
+        const applyPromoCode = document.getElementById('applyPromoCode');
+        const backFromPromo = document.getElementById('backFromPromo');
+        const promoStatus = document.getElementById('promoStatus');
+
+        // Bank selection elements
+        const bankSelectionScreen = document.getElementById('bankSelectionScreen');
+        const backFromBankSelection = document.getElementById('backFromBankSelection');
+        const countryWithdrawalGrid = document.getElementById('countryWithdrawalGrid');
+
+        // Initialize
+        updateBalance();
+        loadUsername();
+        generateGameSequence();
+        loadDepositData();
+        loadSettings();
+        loadStats();
+        generateDailyPromoCode();
+        initializeWithdrawalCountries();
+
+        // Initialize withdrawal countries grid
+        function initializeWithdrawalCountries() {
+            countryWithdrawalGrid.innerHTML = '';
+            for (const [code, country] of Object.entries(countriesWithBanks)) {
+                const button = document.createElement('button');
+                button.className = 'country-button';
+                button.innerHTML = `
+                    <span class="country-flag">${country.flag}</span>
+                    <span>${country.name}</span>
+                `;
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.country-button').forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    selectedWithdrawalCountry = code;
+                    
+                    // Show bank selection
+                    withdrawalScreen.style.display = 'none';
+                    bankSelectionScreen.style.display = 'flex';
+                    
+                    // Populate banks
+                    const bankGrid = document.getElementById('bankSelectionGrid');
+                    bankGrid.innerHTML = '';
+                    
+                    country.banks.forEach((bank, index) => {
+                        const bankBtn = document.createElement('button');
+                        bankBtn.className = `bank-button-compact ${bank.color}`;
+                        bankBtn.textContent = bank.name;
+                        bankBtn.title = bank.name; // Добавляем подсказку
+                        bankBtn.addEventListener('click', () => {
+                            selectedWithdrawalBank = bank.name;
+                            bankSelectionScreen.style.display = 'none';
+                            withdrawalFormModal.style.display = 'flex';
+                            selectedBankName.textContent = `Вывод в ${bank.name}`;
+                        });
+                        bankGrid.appendChild(bankBtn);
+                    });
+                });
+                countryWithdrawalGrid.appendChild(button);
+            }
+        }
+
+        // Generate daily promo code
+        function generateDailyPromoCode() {
+            const today = new Date().toISOString().split('T')[0];
+            const storedPromo = JSON.parse(localStorage.getItem('dailyPromoCode')) || { date: '', code: '' };
+            
+            if (storedPromo.date !== today) {
+                // Generate new promo code
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let code = '';
+                for (let i = 0; i < 12; i++) {
+                    code += chars.charAt(Math.floor(Math.random() * chars.length));
+                    if (i === 3 || i === 7) code += '-';
+                }
+                
+                promoCode = code;
+                promoCodeExpiry = new Date();
+                promoCodeExpiry.setHours(24, 0, 0, 0);
+                
+                localStorage.setItem('dailyPromoCode', JSON.stringify({
+                    date: today,
+                    code: code,
+                    expiry: promoCodeExpiry.getTime()
+                }));
+            } else {
+                promoCode = storedPromo.code;
+                promoCodeExpiry = new Date(storedPromo.expiry);
+            }
+            
+            // Update promo code display
+            const promoDisplay = document.getElementById('todayPromoCode');
+            if (promoDisplay) {
+                promoDisplay.textContent = promoCode;
+            }
+        }
+
+        // Load settings
+        function loadSettings() {
+            const settings = JSON.parse(localStorage.getItem('casinoSettings')) || {};
+            gameBackground = settings.gameBackground || 'space';
+            soundEnabled = settings.soundEnabled !== false;
+            usedPromoCodes = settings.usedPromoCodes || [];
+            
+            // Apply background
+            document.body.className = '';
+            document.body.classList.add(`game-bg-${gameBackground}`);
+        }
+
+        // Save settings
+        function saveSettings() {
+            const settings = {
+                gameBackground: gameBackground,
+                soundEnabled: soundEnabled,
+                usedPromoCodes: usedPromoCodes
+            };
+            localStorage.setItem('casinoSettings', JSON.stringify(settings));
+        }
+
+        // Load stats
+        function loadStats() {
+            const savedStats = JSON.parse(localStorage.getItem('casinoStats'));
+            if (savedStats) {
+                stats = savedStats;
+            }
+        }
+
+        // Save stats
+        function saveStats() {
+            localStorage.setItem('casinoStats', JSON.stringify(stats));
+        }
+
+        // Update stats
+        function updateStats(result, multiplierValue, betAmount, profit = 0) {
+            stats.totalGames++;
+            stats.totalBet += betAmount;
+            
+            if (result === 'win') {
+                stats.totalWins++;
+                stats.totalWon += profit;
+                stats.currentStreak = stats.currentStreak > 0 ? stats.currentStreak + 1 : 1;
+            } else {
+                stats.totalLosses++;
+                stats.currentStreak = stats.currentStreak < 0 ? stats.currentStreak - 1 : -1;
+            }
+            
+            if (Math.abs(stats.currentStreak) > Math.abs(stats.maxStreak)) {
+                stats.maxStreak = stats.currentStreak;
+            }
+            
+            if (multiplierValue > stats.maxMultiplier) {
+                stats.maxMultiplier = multiplierValue;
+            }
+            
+            saveStats();
+        }
+
+        // Display stats
+        function displayStats() {
+            const statsContainer = document.getElementById('statsContainer');
+            if (!statsContainer) return;
+            
+            const winRate = stats.totalGames > 0 ? ((stats.totalWins / stats.totalGames) * 100).toFixed(1) : 0;
+            const avgProfit = stats.totalGames > 0 ? ((stats.totalWon - (stats.totalBet - stats.totalWon)) / stats.totalGames).toFixed(2) : 0;
+            
+            statsContainer.innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-label">Всего игр</div>
+                    <div class="stat-value">${stats.totalGames}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Побед</div>
+                    <div class="stat-value">${stats.totalWins}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Проигрышей</div>
+                    <div class="stat-value">${stats.totalLosses}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">% побед</div>
+                    <div class="stat-value">${winRate}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Макс. множитель</div>
+                    <div class="stat-value">${stats.maxMultiplier.toFixed(2)}x</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Макс. серия</div>
+                    <div class="stat-value">${Math.abs(stats.maxStreak)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Общий выигрыш</div>
+                    <div class="stat-value">$${stats.totalWon.toFixed(2)}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Средняя прибыль</div>
+                    <div class="stat-value">$${avgProfit}</div>
+                </div>
+            `;
+        }
+
+        // Event Listeners
+        playButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            gameScreen.style.display = 'block';
+            document.body.classList.remove('withdrawal-screen', 'deposit-screen', 'settings-screen', 'promo-screen');
+        });
+
+        registerButton.addEventListener('click', () => {
+            registerModal.style.display = 'flex';
+        });
+
+        usernameDisplay.addEventListener('click', () => {
+            registerModal.style.display = 'flex';
+        });
+
+        saveNicknameButton.addEventListener('click', saveUsername);
+
+        nicknameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                saveUsername();
+            }
+        });
+
+        startButton.addEventListener('click', startGame);
+        cashoutButton.addEventListener('click', cashout);
+        backButton.addEventListener('click', () => {
+            gameScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('withdrawal-screen', 'deposit-screen', 'settings-screen', 'promo-screen');
+            endGame();
+        });
+
+        // Deposit button
+        depositButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            depositScreen.style.display = 'flex';
+            document.body.classList.add('deposit-screen');
+            document.body.classList.remove('withdrawal-screen', 'settings-screen', 'promo-screen');
+        });
+
+        // Back from deposit selection
+        backFromDeposit.addEventListener('click', () => {
+            depositScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('deposit-screen');
+        });
+
+        // Country selection for deposit
+        document.querySelectorAll('.country-button').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelectorAll('.country-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                
+                button.classList.add('active');
+                selectedCountry = button.getAttribute('data-country');
+                selectedCountryCode = button.getAttribute('data-code');
+            });
+        });
+
+        // Continue to deposit form
+        continueDeposit.addEventListener('click', () => {
+            if (!selectedCountry) {
+                alert('Пожалуйста, выберите вашу страну!');
+                return;
+            }
+            
+            depositScreen.style.display = 'none';
+            depositFormModal.style.display = 'flex';
+            countryCodeInput.value = selectedCountryCode;
+            updateDepositLimitDisplay();
+        });
+
+        // Back from deposit form
+        backFromDepositForm.addEventListener('click', () => {
+            depositFormModal.style.display = 'none';
+            depositScreen.style.display = 'flex';
+        });
+
+        // Submit deposit
+        submitDeposit.addEventListener('click', () => {
+            const phone = depositPhoneInput.value.trim();
+            const email = depositEmailInput.value.trim();
+            const card = depositCardInput.value.trim();
+            const amount = parseFloat(depositAmountInput.value);
+            
+            if (!phone) {
+                alert('Пожалуйста, введите номер телефона!');
+                return;
+            }
+            
+            if (!email) {
+                alert('Пожалуйста, введите email адрес!');
+                return;
+            }
+            
+            if (!email.includes('@') || !email.includes('.')) {
+                alert('Пожалуйста, введите корректный email адрес!');
+                return;
+            }
+            
+            if (card.length !== 16 || !/^\d+$/.test(card)) {
+                alert('Пожалуйста, введите корректный 16-значный номер карты!');
+                return;
+            }
+            
+            if (isNaN(amount) || amount < 1 || amount > 500) {
+                alert('Пожалуйста, введите сумму от $1 до $500!');
+                return;
+            }
+            
+            if (todayDeposited + amount > MAX_DAILY_DEPOSIT) {
+                alert(`Дневной лимит пополнения превышен! Вы можете пополнить максимум $${MAX_DAILY_DEPOSIT - todayDeposited} сегодня.`);
+                return;
+            }
+            
+            // Update balance
+            balance += amount;
+            todayDeposited += amount;
+            updateBalance();
+            saveDepositData();
+            
+            depositFormModal.style.display = 'none';
+            successTitle.textContent = '✅ Пополнение успешно!';
+            successMessage.textContent = `$${amount.toFixed(2)} добавлено на ваш баланс.`;
+            successScreen.style.display = 'flex';
+            
+            // Reset form
+            depositPhoneInput.value = '';
+            depositEmailInput.value = '';
+            depositCardInput.value = '';
+            depositAmountInput.value = '';
+        });
+
+        // Withdraw button
+        withdrawButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            withdrawalScreen.style.display = 'flex';
+            document.body.classList.add('withdrawal-screen');
+            document.body.classList.remove('deposit-screen', 'settings-screen', 'promo-screen');
+        });
+
+        // Back from withdrawal
+        backFromWithdrawal.addEventListener('click', () => {
+            withdrawalScreen.style.display = 'none';
+            bankSelectionScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('withdrawal-screen');
+        });
+
+        // Back from bank selection
+        backFromBankSelection.addEventListener('click', () => {
+            bankSelectionScreen.style.display = 'none';
+            withdrawalScreen.style.display = 'flex';
+        });
+
+        // Back from withdrawal form
+        backFromForm.addEventListener('click', () => {
+            withdrawalFormModal.style.display = 'none';
+            bankSelectionScreen.style.display = 'flex';
+        });
+
+        // Submit withdrawal
+        submitWithdrawal.addEventListener('click', () => {
+            const phone = phoneInput.value.trim();
+            const amount = parseFloat(withdrawAmountInput.value);
+            
+            if (!phone) {
+                alert('Пожалуйста, введите номер телефона!');
+                return;
+            }
+            
+            if (isNaN(amount) || amount < 1) {
+                alert('Пожалуйста, введите корректную сумму!');
+                return;
+            }
+            
+            if (amount > balance) {
+                alert('Недостаточно средств на балансе!');
+                return;
+            }
+            
+            withdrawalFormModal.style.display = 'none';
+            loadingTitle.textContent = 'Обработка вывода';
+            loadingText.textContent = 'Пожалуйста, подождите 5 секунд...';
+            loadingScreen.style.display = 'flex';
+            
+            setTimeout(() => {
+                balance -= amount;
+                updateBalance();
+                
+                loadingScreen.style.display = 'none';
+                successTitle.textContent = '✅ Вывод успешен!';
+                successMessage.textContent = `$${amount.toFixed(2)} будет переведено в ${selectedWithdrawalBank} в течение 24 часов.`;
+                successScreen.style.display = 'flex';
+                
+                phoneInput.value = '';
+                withdrawAmountInput.value = '';
+            }, 5000);
+        });
+
+        // Settings button
+        settingsButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            settingsScreen.style.display = 'flex';
+            document.body.classList.add('settings-screen');
+            document.body.classList.remove('withdrawal-screen', 'deposit-screen', 'promo-screen');
+        });
+
+        // Back from settings
+        backFromSettings.addEventListener('click', () => {
+            settingsScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('settings-screen');
+        });
+
+        // Settings items - теперь все кнопки работают
+        bgSettingsBtn.addEventListener('click', () => {
+            document.getElementById('bgSettingsModal').style.display = 'flex';
+        });
+
+        gameHistoryBtn.addEventListener('click', () => {
+            displayGameHistory();
+            document.getElementById('gameHistoryModal').style.display = 'flex';
+        });
+
+        soundSettingsBtn.addEventListener('click', () => {
+            document.getElementById('soundSettingsModal').style.display = 'flex';
+            const soundToggle = document.getElementById('soundToggle');
+            const soundStatus = document.getElementById('soundStatus');
+            
+            soundToggle.checked = soundEnabled;
+            soundStatus.textContent = soundEnabled ? 'Включены' : 'Выключены';
+        });
+
+        getPromoCodeBtn.addEventListener('click', () => {
+            document.getElementById('getPromoCodeModal').style.display = 'flex';
+            const promoDisplay = document.getElementById('todayPromoCode');
+            if (promoDisplay) {
+                promoDisplay.textContent = promoCode;
+            }
+        });
+
+        statsBtn.addEventListener('click', () => {
+            displayStats();
+            document.getElementById('statsModal').style.display = 'flex';
+        });
+
+        helpBtn.addEventListener('click', () => {
+            document.getElementById('helpModal').style.display = 'flex';
+        });
+
+        // Background settings
+        document.querySelectorAll('.bg-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.bg-option').forEach(opt => opt.classList.remove('active'));
+                option.classList.add('active');
+                gameBackground = option.getAttribute('data-bg');
+            });
+        });
+
+        document.getElementById('saveBgSettings').addEventListener('click', () => {
+            document.body.className = '';
+            document.body.classList.add(`game-bg-${gameBackground}`);
+            saveSettings();
+            document.getElementById('bgSettingsModal').style.display = 'none';
+        });
+
+        // Sound settings
+        document.getElementById('saveSoundSettings').addEventListener('click', () => {
+            const soundToggle = document.getElementById('soundToggle');
+            soundEnabled = soundToggle.checked;
+            saveSettings();
+            document.getElementById('soundSettingsModal').style.display = 'none';
+            alert(soundEnabled ? 'Звуки включены!' : 'Звуки выключены!');
+        });
+
+        // Promo code tasks - ИЗМЕНЕНИЕ: Проверка ответов
+        document.querySelectorAll('.task-option').forEach(option => {
+            option.addEventListener('click', () => {
+                const task = option.getAttribute('data-task');
+                const value = option.getAttribute('data-value');
+                
+                // Remove selected class from other options in same task
+                const taskOptions = document.querySelectorAll(`.task-option[data-task="${task}"]`);
+                taskOptions.forEach(opt => opt.classList.remove('selected'));
+                
+                // Add selected class to clicked option
+                option.classList.add('selected');
+            });
+        });
+
+        document.getElementById('checkTasksBtn').addEventListener('click', () => {
+            const task1 = document.querySelector('.task-option[data-task="1"].selected');
+            const task2 = document.querySelector('.task-option[data-task="2"].selected');
+            const task3 = document.querySelector('.task-option[data-task="3"].selected');
+            
+            if (!task1 || !task2 || !task3) {
+                alert('Пожалуйста, выполните все задания!');
+                return;
+            }
+            
+            const task1Value = task1.getAttribute('data-value');
+            const task2Value = task2.getAttribute('data-value');
+            const task3Value = task3.getAttribute('data-value');
+            
+            // Check answers - ИЗМЕНЕНИЕ: Правильные ответы
+            if (task1Value === 'subscribed' && task2Value === 'black' && task3Value === 'active') {
+                document.getElementById('promoResult').style.display = 'block';
+            } else {
+                alert('Некоторые ответы неверны! Попробуйте снова.');
+            }
+        });
+
+        // Promo code button
+        promoCodeButton.addEventListener('click', () => {
+            mainMenu.style.display = 'none';
+            promoScreen.style.display = 'flex';
+            document.body.classList.add('promo-screen');
+            document.body.classList.remove('withdrawal-screen', 'deposit-screen', 'settings-screen');
+        });
+
+        // Back from promo screen
+        backFromPromo.addEventListener('click', () => {
+            promoScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('promo-screen');
+        });
+
+        // Apply promo code
+        applyPromoCode.addEventListener('click', () => {
+            const inputCode = promoCodeInput.value.trim().toUpperCase();
+            
+            if (!inputCode) {
+                showPromoError('Пожалуйста, введите промокод!');
+                return;
+            }
+            
+            // Check if promo code is valid
+            if (inputCode !== promoCode) {
+                showPromoError('Неверный промокод!');
+                return;
+            }
+            
+            // Check if promo code is expired
+            if (new Date() > promoCodeExpiry) {
+                showPromoError('Промокод истек!');
+                return;
+            }
+            
+            // Check if promo code was already used
+            if (usedPromoCodes.includes(promoCode)) {
+                showPromoError('Промокод уже использован!');
+                return;
+            }
+            
+            // Get random gift
+            const randomGift = promoGifts[Math.floor(Math.random() * promoGifts.length)];
+            
+            // Apply gift (for demo, just show message)
+            showPromoSuccess(randomGift);
+            
+            // Mark promo code as used
+            usedPromoCodes.push(promoCode);
+            saveSettings();
+            
+            // Clear input
+            promoCodeInput.value = '';
+        });
+
+        // Back from success screen
+        backToMenuFromSuccess.addEventListener('click', () => {
+            successScreen.style.display = 'none';
+            mainMenu.style.display = 'flex';
+            document.body.classList.remove('withdrawal-screen', 'deposit-screen', 'settings-screen', 'promo-screen');
+            document.body.className = '';
+            document.body.classList.add(`game-bg-${gameBackground}`);
+        });
+
+        // Quick bet buttons
+        document.querySelectorAll('.quick-bet-button').forEach(button => {
+            button.addEventListener('click', () => {
+                betAmountInput.value = button.getAttribute('data-amount');
+            });
+        });
+
+        // Username functions
+        function saveUsername() {
+            const nickname = nicknameInput.value.trim();
+            if (nickname.length < 2 || nickname.length > 12) {
+                alert('Никнейм должен быть от 2 до 12 символов!');
+                return;
+            }
+            
+            username = nickname;
+            localStorage.setItem('casinoUsername', username);
+            
+            registerButton.style.display = 'none';
+            usernameDisplay.textContent = `👤 ${username}`;
+            usernameDisplay.style.display = 'block';
+            
+            registerModal.style.display = 'none';
+            nicknameInput.value = '';
+        }
+
+        function loadUsername() {
+            const savedUsername = localStorage.getItem('casinoUsername');
+            if (savedUsername) {
+                username = savedUsername;
+                registerButton.style.display = 'none';
+                usernameDisplay.textContent = `👤 ${username}`;
+                usernameDisplay.style.display = 'block';
+            }
+        }
+
+        // Game functions
+        function generateGameSequence() {
+            gameSequence = [];
+            const totalGames = 1000;
+            
+            const distribution = [
+                { count: 600, min: 1.20, max: 1.50 },
+                { count: 250, min: 1.50, max: 1.65 },
+                { count: 100, min: 1.65, max: 2.00 },
+                { count: 30, min: 2.00, max: 2.50 },
+                { count: 17, min: 2.50, max: 2.80 },
+                { count: 3, min: 2.80, max: 15.00 }
+            ];
+            
+            distribution.forEach(range => {
+                for (let i = 0; i < range.count; i++) {
+                    let explosion;
+                    
+                    if (range.max <= 1.50) {
+                        explosion = range.min + Math.random() * (range.max - range.min);
+                        if (Math.random() < 0.4) {
+                            explosion = 1.20 + Math.random() * 0.10;
+                        }
+                    } else if (range.max <= 2.80) {
+                        explosion = range.min + Math.random() * (range.max - range.min);
+                    } else {
+                        const base = range.min;
+                        const power = Math.random() * 2;
+                        explosion = base * Math.pow(1.5, power);
+                        if (explosion > range.max) {
+                            explosion = range.max - Math.random() * 2;
+                        }
+                    }
+                    
+                    explosion = parseFloat(explosion.toFixed(2));
+                    gameSequence.push(explosion);
+                }
+            });
+            
+            // Shuffle
+            for (let i = gameSequence.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gameSequence[i], gameSequence[j]] = [gameSequence[j], gameSequence[i]];
+            }
+        }
+
+        function startGame() {
+            const betAmount = parseFloat(betAmountInput.value);
+            
+            if (isNaN(betAmount) || betAmount < 1) {
+                alert('Пожалуйста, введите корректную сумму ставки!');
+                return;
+            }
+            
+            if (betAmount > balance) {
+                alert('Недостаточно средств на балансе!');
+                return;
+            }
+            
+            currentBet = betAmount;
+            multiplier = 1.00;
+            gameActive = true;
+            
+            explosionPoint = gameSequence[currentGameIndex % gameSequence.length];
+            currentGameIndex++;
+            
+            if (currentGameIndex >= gameSequence.length - 20) {
+                generateGameSequence();
+                currentGameIndex = 0;
+            }
+            
+            balance -= currentBet;
+            updateBalance();
+            
+            multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
+            multiplierDisplay.classList.remove('multiplier-lose');
+            multiplierDisplay.style.color = '#2a9d8f';
+            
+            startButton.disabled = true;
+            startButton.style.display = 'none';
+            cashoutButton.style.display = 'block';
+            
+            gameInterval = setInterval(updateGame, 40);
+        }
+
+        function updateGame() {
+            if (!gameActive) return;
+            
+            // Slower rocket speed (changed from 0.018 to 0.012)
+            const speed = 0.6 + Math.random() * 0.9;
+            multiplier += 0.012 * speed;
+            
+            multiplierDisplay.textContent = multiplier.toFixed(2) + 'x';
+            
+            const moveDistance = (multiplier - 1) * 30;
+            rocketEmoji.style.transform = `translateY(${-moveDistance}px) rotate(${(multiplier - 1) * 5}deg)`;
+            
+            const redValue = Math.min(255, Math.floor(100 + (multiplier - 1) * 25));
+            const greenValue = Math.min(255, Math.floor(255 - (multiplier - 1) * 20));
+            
+            if (multiplier < explosionPoint) {
+                multiplierDisplay.style.color = `rgb(${redValue}, ${greenValue}, 157)`;
+                multiplierDisplay.style.textShadow = `0 0 ${15 + multiplier * 3}px rgb(${redValue}, ${greenValue}, 157)`;
+            }
+            
+            const glowIntensity = 20 + multiplier * 4;
+            rocketEmoji.style.filter = `drop-shadow(0 0 ${glowIntensity}px rgba(255, 255, 255, 0.7))`;
+            
+            const autoCashout = parseFloat(autoCashoutInput.value);
+            if (!isNaN(autoCashout) && multiplier >= autoCashout) {
+                cashout();
+                return;
+            }
+            
+            if (multiplier >= explosionPoint) {
+                explode();
+            }
+        }
+
+        function cashout() {
+            if (!gameActive) return;
+            
+            const winnings = currentBet * multiplier;
+            balance += winnings;
+            const profit = winnings - currentBet;
+            
+            // Add to history
+            gameHistory.push({
+                type: 'win',
+                multiplier: multiplier.toFixed(2),
+                bet: currentBet,
+                profit: profit,
+                date: new Date().toISOString()
+            });
+            
+            // Update stats
+            updateStats('win', multiplier, currentBet, profit);
+            
+            showWinAnimation();
+            document.getElementById('winDetails').textContent = `Вы зафиксировали выигрыш на ${multiplier.toFixed(2)}x и выиграли $${profit.toFixed(2)}!`;
+            setTimeout(() => {
+                winMessage.style.display = 'flex';
+            }, 500);
+            
+            endGame();
+        }
+
+        function explode() {
+            if (!gameActive) return;
+            
+            multiplierDisplay.classList.add('multiplier-lose');
+            multiplierDisplay.style.color = '#e76f51';
+            multiplierDisplay.style.textShadow = '0 0 40px #e76f51, 0 0 80px #e76f51';
+            
+            rocketEmoji.textContent = '💥';
+            rocketEmoji.style.fontSize = '250px';
+            rocketEmoji.style.transform = 'scale(1.5)';
+            rocketEmoji.style.filter = 'drop-shadow(0 0 50px rgba(231, 111, 81, 0.8))';
+            
+            // Add to history
+            gameHistory.push({
+                type: 'lose',
+                multiplier: multiplier.toFixed(2),
+                bet: currentBet,
+                date: new Date().toISOString()
+            });
+            
+            // Update stats
+            updateStats('lose', multiplier, currentBet);
+            
+            document.getElementById('loseDetails').textContent = `Ракета взорвалась на ${multiplier.toFixed(2)}x. Вы потеряли $${currentBet.toFixed(2)}!`;
+            loseMessage.style.display = 'flex';
+            
+            endGame();
+        }
+
+        function endGame() {
+            gameActive = false;
+            clearInterval(gameInterval);
+            
+            startButton.disabled = false;
+            startButton.style.display = 'block';
+            cashoutButton.style.display = 'none';
+            
+            multiplierDisplay.textContent = '1.00x';
+            resetRocket();
+            
+            currentBet = 0;
+            updateBalance();
+            saveGameHistory();
+        }
+
+        function resetRocket() {
+            rocketEmoji.textContent = '🚀';
+            rocketEmoji.style.fontSize = '200px';
+            rocketEmoji.style.transform = 'translateY(0px) rotate(0deg)';
+            rocketEmoji.style.filter = 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.7))';
+            multiplierDisplay.classList.remove('multiplier-lose');
+            multiplierDisplay.style.color = '#2a9d8f';
+            multiplierDisplay.style.textShadow = '0 0 30px #2a9d8f, 0 0 60px #2a9d8f';
+        }
+
+        function showWinAnimation() {
+            for (let i = 0; i < 150; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.left = Math.random() * 100 + 'vw';
+                
+                const size = Math.random() * 20 + 5;
+                confetti.style.width = size + 'px';
+                confetti.style.height = size + 'px';
+                
+                const colors = ['#2a9d8f', '#e76f51', '#e9c46a', '#264653', '#f4a261'];
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 1;
+                confetti.style.animation = `confettiRain ${duration}s linear ${delay}s forwards`;
+                
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => {
+                    if (confetti.parentNode) confetti.remove();
+                }, (duration + delay) * 1000);
+            }
+        }
+
+        function updateBalance() {
+            balanceElement.textContent = balance.toFixed(2);
+            localStorage.setItem('casinoBalance', balance.toString());
+        }
+
+        // Deposit functions
+        function updateDepositLimitDisplay() {
+            const percentage = (todayDeposited / MAX_DAILY_DEPOSIT) * 100;
+            depositProgress.style.width = `${percentage}%`;
+            depositLimitText.textContent = `$${todayDeposited.toFixed(2)} из $${MAX_DAILY_DEPOSIT} использовано сегодня`;
+            
+            if (percentage > 80) {
+                depositProgress.style.background = 'linear-gradient(90deg, #e76f51, #f4a261)';
+            } else if (percentage > 50) {
+                depositProgress.style.background = 'linear-gradient(90deg, #e9c46a, #f4a261)';
+            }
+        }
+
+        function loadDepositData() {
+            const today = new Date().toISOString().split('T')[0];
+            const depositData = JSON.parse(localStorage.getItem('depositData')) || { date: today, amount: 0 };
+            
+            if (depositData.date !== today) {
+                todayDeposited = 0;
+                saveDepositData();
+            } else {
+                todayDeposited = depositData.amount;
+            }
+            
+            updateDepositLimitDisplay();
+        }
+
+        function saveDepositData() {
+            const today = new Date().toISOString().split('T')[0];
+            const depositData = { date: today, amount: todayDeposited };
+            localStorage.setItem('depositData', JSON.stringify(depositData));
+            updateDepositLimitDisplay();
+        }
+
+        // Game history functions
+        function saveGameHistory() {
+            if (gameHistory.length > 100) {
+                gameHistory = gameHistory.slice(-100);
+            }
+            localStorage.setItem('gameHistory', JSON.stringify(gameHistory));
+        }
+
+        function displayGameHistory() {
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+            
+            const savedHistory = JSON.parse(localStorage.getItem('gameHistory')) || [];
+            const historyToShow = savedHistory.slice(-20).reverse();
+            
+            if (historyToShow.length === 0) {
+                historyList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">История игр пуста</div>';
+                return;
+            }
+            
+            historyToShow.forEach((game, index) => {
+                const item = document.createElement('div');
+                item.className = `history-item history-${game.type}`;
+                
+                const date = new Date(game.date);
+                const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                if (game.type === 'win') {
+                    item.innerHTML = `
+                        <div>
+                            <strong>ПОБЕДА</strong> - ${timeStr}
+                            <div style="font-size: 0.9rem; color: #666;">Множитель: ${game.multiplier}x</div>
+                        </div>
+                        <div style="color: #2a9d8f; font-weight: bold;">
+                            +$${game.profit.toFixed(2)}
+                        </div>
+                    `;
+                } else {
+                    item.innerHTML = `
+                        <div>
+                            <strong>ПРОИГРЫШ</strong> - ${timeStr}
+                            <div style="font-size: 0.9rem; color: #666;">Множитель: ${game.multiplier}x</div>
+                        </div>
+                        <div style="color: #e76f51; font-weight: bold;">
+                            -$${game.bet.toFixed(2)}
+                        </div>
+                    `;
+                }
+                
+                historyList.appendChild(item);
+            });
+        }
+
+        // Promo code functions
+        function showPromoSuccess(message) {
+            promoStatus.textContent = message;
+            promoStatus.className = 'promo-status promo-success';
+            promoStatus.style.display = 'block';
+        }
+
+        function showPromoError(message) {
+            promoStatus.textContent = message;
+            promoStatus.className = 'promo-status promo-error';
+            promoStatus.style.display = 'block';
+            
+            // Shake animation
+            promoCodeInput.style.animation = 'none';
+            setTimeout(() => {
+                promoCodeInput.style.animation = 'shake 0.5s';
+            }, 10);
+        }
+
+        // Message functions
+        function closeMessage() {
+            winMessage.style.display = 'none';
+            loseMessage.style.display = 'none';
+            resetRocket();
+        }
+
+        // Load saved data
+        window.addEventListener('load', () => {
+            const savedBalance = localStorage.getItem('casinoBalance');
+            if (savedBalance) {
+                balance = parseFloat(savedBalance);
+                updateBalance();
+            }
+            
+            const savedHistory = localStorage.getItem('gameHistory');
+            if (savedHistory) {
+                gameHistory = JSON.parse(savedHistory);
+            }
+            
+            loadSettings();
+            generateDailyPromoCode();
+        });
+
+        // Prevent form submission on Enter
+        betAmountInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (!gameActive) startGame();
+            }
+        });
+
+        // Close modals on outside click
+        window.addEventListener('click', (e) => {
+            const modals = ['registerModal', 'bgSettingsModal', 'gameHistoryModal', 'getPromoCodeModal',
+                          'soundSettingsModal', 'statsModal', 'helpModal', 'withdrawalFormModal', 
+                          'depositFormModal', 'winMessage', 'loseMessage'];
+            
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (modal && e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+EOF
+
+chmod +x next_gifts_casino_fixed.html
+echo "✅ Файл создан: next_gifts_casino_fixed.html"
+
+# Открываем в браузере
+echo "🌐 Открываю игру в браузере..."
+if command -v open &> /dev/null; then
+    open next_gifts_casino_fixed.html
+elif command -v xdg-open &> /dev/null; then
+    xdg-open next_gifts_casino_fixed.html
+else
+    echo "ℹ️  Файл сохранен. Откройте next_gifts_casino_fixed.html в вашем браузере"
+fi
